@@ -1,0 +1,14 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/takenPhoto"
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+
+     >
+
+    </androidx.appcompat.widget.AppCompatImageView>
+
+
+</layout>
