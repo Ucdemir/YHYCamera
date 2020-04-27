@@ -20,6 +20,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -46,6 +47,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -58,6 +60,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
+
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -74,10 +78,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -120,7 +127,12 @@ public class CameraFragment extends Fragment
     private static final SparseIntArray INVERSE_ORIENTATIONS = new SparseIntArray();
     private static final SparseIntArray DEFAULT_ORIENTATIONS = new SparseIntArray();
 
+    private static int time = 0;
+
     private DataAdapter adapter;
+
+    private Runnable videoRunnable;
+    private Handler videoHandler;
 
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
@@ -128,6 +140,22 @@ public class CameraFragment extends Fragment
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
+    static final String appDirectoryNamePictures = "Timetable - School Planner (Pictures)";
+    static final String appDirectoryNameVideos= "Timetable - School Planner (Videos)";
+
+    static final File imageRoot = new File(Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_PICTURES), appDirectoryNamePictures);
+    static final File videoRoot = new File(Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_MOVIES).getAbsolutePath(), appDirectoryNameVideos);
+
+
+
+    private enum FlashMode{
+        Flash,NoFlash,Auto
+    }
+
+    private FlashMode flashMode =  FlashMode.NoFlash;
 
     /**
      * Tag for the {@link Log}.
@@ -467,20 +495,24 @@ public class CameraFragment extends Fragment
                 inflater, R.layout.fragment_camera, container, false);
         View view = binding.getRoot();
 
-        binding.flash.setTag(R.drawable.flash);
+        //binding.flash.setTag(R.drawable.flash);
 
         binding.flash.setOnClickListener(v->{
 
 
-            if((Integer)binding.flash.getTag() == R.drawable.flash){
-
-
-                binding.flash.setImageResource(R.drawable.no_flash);
-                binding.flash.setTag(R.drawable.no_flash);
-                turnFlashlightOn();
-            }else{
+            if(flashMode == FlashMode.NoFlash){
                 binding.flash.setImageResource(R.drawable.flash);
-                binding.flash.setTag(R.drawable.flash);
+                turnFlashlightOn();
+                flashMode = FlashMode.Flash;
+
+            }else if(flashMode == FlashMode.Flash){
+                binding.flash.setImageResource(R.drawable.flash_auto);
+                //turnFlashlightOff();
+                flashMode = FlashMode.Auto;
+            }
+            else{
+                binding.flash.setImageResource(R.drawable.no_flash);
+                flashMode = FlashMode.NoFlash;
                 turnFlashlightOff();
             }
 
@@ -521,17 +553,38 @@ public class CameraFragment extends Fragment
             if(isVideo){
 
                 if(mIsRecordingVideo){
+                    binding.videoTimer.setVisibility(View.GONE);
                     stopRecordingVideo();
+                    stopVideoTime();
+
+                    addToGaleryVideo();
+                    //galleryAddPic(mFile.getAbsolutePath());
                 }else{
+
+                    binding.videoTimer.setVisibility(View.VISIBLE);
+                    videoRoot.mkdirs();
+                    mFile = new File(videoRoot, setMediaFileName()+".mp4");
+
+                    displayVideoTime();
                     startRecordingVideo();
+
                 }
 
             }else{
+
+                imageRoot.mkdirs();
+                mFile = new File(imageRoot, setMediaFileName()+".jpg");
                 takePicture();
+
+                addToGaleryPicture();
+
+                //galleryAddPic(mFile.getAbsolutePath());
             }
 
         });
 
+
+        setMediaFileName();
         return view;
     }
     @Override
@@ -547,16 +600,6 @@ public class CameraFragment extends Fragment
 
 
 
-       imageRoot.mkdirs();
-        mFile = new File(imageRoot, "image1.jpg");
-
-
-        galleryAddPic(mFile.getAbsolutePath());
-
-        Log.d("omer",mFile.getAbsolutePath());
-
-       /* mFile = new File(getActivity().getExternalFilesDir(null), "pic2.jpg");
-        Log.d("omer",mFile.getAbsolutePath());*/
     }
 
 
@@ -850,14 +893,19 @@ public class CameraFragment extends Fragment
                             mCaptureSession = cameraCaptureSession;
                             try {
                                 // Auto focus should be continuous for camera preview.
-                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                              /*  mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                                 // Flash is automatically enabled when necessary.
-                                setAutoFlash(mPreviewRequestBuilder);
+                                setAutoFlash(mPreviewRequestBuilder);*/
 
                                 // Finally, we start displaying the camera preview.
-                                mPreviewRequest = mPreviewRequestBuilder.build();
-                                mCaptureSession.setRepeatingRequest(mPreviewRequest,
+
+                                //27/04/2020 de silindi
+                                //mPreviewRequest = mPreviewRequestBuilder.build();
+
+
+
+                                mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(),
                                         mCaptureCallback, mBackgroundHandler);
                             } catch (CameraAccessException e) {
                                 e.printStackTrace();
@@ -926,6 +974,8 @@ public class CameraFragment extends Fragment
                     CameraMetadata.CONTROL_AF_TRIGGER_START);
             // Tell #mCaptureCallback to wait for the lock.
             mState = STATE_WAITING_LOCK;
+
+
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
         } catch (CameraAccessException e) {
@@ -967,9 +1017,13 @@ public class CameraFragment extends Fragment
             captureBuilder.addTarget(mImageReader.getSurface());
 
             // Use the same AE and AF modes as the preview.
-            captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-            setAutoFlash(captureBuilder);
+            /*captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+
+            setAutoFlash(captureBuilder);*/
+
+
+            a(captureBuilder);
+
 
             // Orientation
             int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
@@ -1019,13 +1073,20 @@ public class CameraFragment extends Fragment
             // Reset the auto-focus trigger
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
-            setAutoFlash(mPreviewRequestBuilder);
+
+            //setAutoFlash(mPreviewRequestBuilder);
+
+
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
             // After this, the camera will go back to the normal state of preview.
             mState = STATE_PREVIEW;
-            mCaptureSession.setRepeatingRequest(mPreviewRequest, mCaptureCallback,
+
+
+            mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
+
+
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -1033,12 +1094,7 @@ public class CameraFragment extends Fragment
 
 
 
-    private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
-        if (mFlashSupported) {
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
-                    CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-        }
-    }
+
 
     /**
      * Saves a JPEG {@link Image} into the specified {@link File}.
@@ -1164,22 +1220,43 @@ public class CameraFragment extends Fragment
 
 
     //-----------------------By Ucdemir
-    static final String appDirectoryName = "Timetable - School Planner";
-    static final File imageRoot = new File(Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_PICTURES), appDirectoryName);
-    static final File videoRoot = new File(Environment.getExternalStoragePublicDirectory(
-            Environment.DIRECTORY_MOVIES).getAbsolutePath(), appDirectoryName);
 
 
-    private void galleryAddPic(String mCurrentPhotoPath) {
+
+   /* private void galleryAddPic(String mCurrentPhotoPath) {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         File f = new File(mCurrentPhotoPath);
         Uri contentUri = Uri.fromFile(f);
         mediaScanIntent.setData(contentUri);
         getActivity().sendBroadcast(mediaScanIntent);
+    }*/
+
+
+    private void addToGaleryPicture(){
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, mFile.getAbsolutePath());
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        }
+        catch (Exception c){
+
+        }
     }
 
+    private void addToGaleryVideo(){
 
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATA, mFile.getAbsolutePath());
+            values.put(MediaStore.Images.Media.MIME_TYPE,"video/mp4" );
+            getActivity().getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+        }
+        catch (Exception c){
+
+        }
+    }
 
 
     private boolean checkLedIsAvaible(){
@@ -1225,6 +1302,22 @@ public class CameraFragment extends Fragment
             mCamera.stopPreview();*/
         }
     }
+
+    private void a(CaptureRequest.Builder requestBuilder){
+        if (mFlashSupported) {
+            requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+        }
+    }
+
+    private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
+        if (mFlashSupported) {
+            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
+                    CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+        }
+    }
+
+
 
     public void switchCamera() {
         if (cameraId.equals(CAMERA_FRONT)) {
@@ -1379,8 +1472,6 @@ public class CameraFragment extends Fragment
          */
 
 
-        videoRoot.mkdirs();
-        mFile = new File(imageRoot, "image1.mp4");
         //mCurrentFile = getOutputMediaFile();
         /**
          * set output file in media recorder
@@ -1470,6 +1561,43 @@ public class CameraFragment extends Fragment
         // Stop recording
         mMediaRecorder.stop();
         mMediaRecorder.reset();
+
+
+
+    }
+
+
+    private void displayVideoTime(){
+       time = 0;
+
+         videoHandler =  new Handler();
+         videoRunnable = new Runnable() {
+            public void run() {
+                time++;
+                binding.videoTimer.setText(Integer.toString(time));
+
+                videoHandler.postDelayed(videoRunnable,1000);
+
+            }
+        };
+
+        videoHandler.postDelayed(videoRunnable,1000);
+
+    }
+
+    private void stopVideoTime(){
+
+        videoHandler.removeCallbacks(videoRunnable);
+        binding.videoTimer.setVisibility(View.GONE);
+    }
+
+    private String setMediaFileName(){
+        DateFormat df = new SimpleDateFormat("dd-MMMM-yyyy-h:m");
+        Date todaysDate = new Date();
+        String date = df.format(todaysDate);
+        Log.d("omer",date);
+
+        return date;
     }
 }
 

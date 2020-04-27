@@ -29,7 +29,7 @@
             android:tint="#ffffff"
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:layout_constraintTop_toTopOf="@+id/guideline2"
-            app:srcCompat="@drawable/flash">
+            app:srcCompat="@drawable/no_flash">
 
         </androidx.appcompat.widget.AppCompatImageView>
 
@@ -81,11 +81,27 @@
 
         </androidx.appcompat.widget.AppCompatImageView>
 
+        <TextView
+            android:id="@+id/videoTimer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/btnTake"
+            android:gravity="center"
+            android:textColor="#D41F26"
+            android:visibility="gone"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:typeface="serif">
+
+        </TextView>
+
 
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:layout_height="80dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:layout_constraintStart_toStartOf="@+id/guideline4"
             app:layout_constraintTop_toTopOf="@+id/guideline"
