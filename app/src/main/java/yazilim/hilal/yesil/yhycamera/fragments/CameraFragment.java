@@ -60,6 +60,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.provider.MediaStore;
 import android.util.Log;
@@ -70,6 +72,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 
@@ -91,8 +94,10 @@ import java.util.concurrent.TimeUnit;
 
 import yazilim.hilal.yesil.yhycamera.R;
 import yazilim.hilal.yesil.yhycamera.adapter.DataAdapter;
+import yazilim.hilal.yesil.yhycamera.adapter.HorizantalSpaceItemDecoration;
 import yazilim.hilal.yesil.yhycamera.camera.AutoFitTextureView;
 import yazilim.hilal.yesil.yhycamera.databinding.FragmentCameraBinding;
+import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
 
 public class CameraFragment extends Fragment
         implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -160,7 +165,7 @@ public class CameraFragment extends Fragment
     /**
      * Tag for the {@link Log}.
      */
-    private static final String TAG = "Camera2BasicFragment";
+    private static final String TAG = "YHYCamera";
 
     /**
      * Camera state: Showing camera preview.
@@ -495,25 +500,38 @@ public class CameraFragment extends Fragment
                 inflater, R.layout.fragment_camera, container, false);
         View view = binding.getRoot();
 
-        //binding.flash.setTag(R.drawable.flash);
+        adapter = new DataAdapter(getActivity());
+
+        LinearLayoutManager llManager = new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,
+                false);
+
+
+
+
+        binding.recyclerView.setAdapter(adapter);
+        binding.recyclerView.setLayoutManager(llManager);
+        binding.recyclerView.setFitsSystemWindows(true);
+
+        binding.recyclerView.addItemDecoration( new HorizantalSpaceItemDecoration(32));
+
 
         binding.flash.setOnClickListener(v->{
 
 
             if(flashMode == FlashMode.NoFlash){
                 binding.flash.setImageResource(R.drawable.flash);
-                turnFlashlightOn();
+                setFlashlightOn();
                 flashMode = FlashMode.Flash;
 
             }else if(flashMode == FlashMode.Flash){
                 binding.flash.setImageResource(R.drawable.flash_auto);
-                //turnFlashlightOff();
+                setFlashlightAuto();
                 flashMode = FlashMode.Auto;
             }
             else{
                 binding.flash.setImageResource(R.drawable.no_flash);
                 flashMode = FlashMode.NoFlash;
-                turnFlashlightOff();
+                setFlashlightOff();
             }
 
         });
@@ -529,8 +547,8 @@ public class CameraFragment extends Fragment
 
            if(isVideo){
                binding.btnTake.setImageResource(R.drawable.take_photo);
-               binding.btnVideo.setImageResource(R.drawable.video);
-               ImageViewCompat.setImageTintList(binding.btnVideo, null);
+               binding.btnVideo.setImageResource(R.drawable.video_new);
+               ImageViewCompat.setImageTintList(binding.btnVideo, ColorStateList.valueOf(getResources().getColor(R.color.white)));
                ImageViewCompat.setImageTintList(binding.btnTake, ColorStateList.valueOf(getResources().getColor(R.color.white)));
 
 
@@ -558,7 +576,17 @@ public class CameraFragment extends Fragment
                     stopVideoTime();
 
                     addToGaleryVideo();
-                    //galleryAddPic(mFile.getAbsolutePath());
+
+
+                    DataClass data = new DataClass();
+                    data.setPath(mFile.getAbsolutePath());
+                    data.setType(DataClass.DataType.Video);
+
+
+                    addToAdapter(data);
+
+
+
                 }else{
 
                     binding.videoTimer.setVisibility(View.VISIBLE);
@@ -578,7 +606,16 @@ public class CameraFragment extends Fragment
 
                 addToGaleryPicture();
 
-                //galleryAddPic(mFile.getAbsolutePath());
+
+                DataClass data = new DataClass();
+                data.setPath(mFile.getAbsolutePath());
+                data.setType(DataClass.DataType.Photo);
+
+
+                addToAdapter(data);
+
+
+
             }
 
         });
@@ -893,15 +930,16 @@ public class CameraFragment extends Fragment
                             mCaptureSession = cameraCaptureSession;
                             try {
                                 // Auto focus should be continuous for camera preview.
-                              /*  mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
+                                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                                         CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                                 // Flash is automatically enabled when necessary.
-                                setAutoFlash(mPreviewRequestBuilder);*/
+
+                                setFlashMode(mPreviewRequestBuilder);
 
                                 // Finally, we start displaying the camera preview.
 
                                 //27/04/2020 de silindi
-                                //mPreviewRequest = mPreviewRequestBuilder.build();
+                               // mPreviewRequest = mPreviewRequestBuilder.build();
 
 
 
@@ -1016,13 +1054,10 @@ public class CameraFragment extends Fragment
                     mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(mImageReader.getSurface());
 
-            // Use the same AE and AF modes as the preview.
-            /*captureBuilder.set(CaptureRequest.CONTROL_AF_MODE,
-
-            setAutoFlash(captureBuilder);*/
 
 
-            a(captureBuilder);
+
+            setFlashMode(captureBuilder);
 
 
             // Orientation
@@ -1074,8 +1109,8 @@ public class CameraFragment extends Fragment
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
                     CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
 
-            //setAutoFlash(mPreviewRequestBuilder);
 
+            setFlashMode(mPreviewRequestBuilder);
 
             mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback,
                     mBackgroundHandler);
@@ -1265,8 +1300,8 @@ public class CameraFragment extends Fragment
 
     }
 
-    private void turnFlashlightOn() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    private void setFlashlightOn() {
+       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             try {
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
@@ -1280,12 +1315,19 @@ public class CameraFragment extends Fragment
             parameters = mCamera.getParameters();
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
             mCamera.setParameters(parameters);
-            mCamera.startPreview();*/
-        }
+            mCamera.startPreview();
+        }*/
+
+       flashMode  = FlashMode.Flash;
+
+       unlockFocus();
+
+
+
     }
 
-    private void turnFlashlightOff() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    private void setFlashlightOff() {
+       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             try {
                 mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
@@ -1299,24 +1341,62 @@ public class CameraFragment extends Fragment
             parameters = mCamera.getParameters();
             parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
             mCamera.setParameters(parameters);
-            mCamera.stopPreview();*/
-        }
+            mCamera.stopPreview();
+        }*/
+
+        flashMode  = FlashMode.NoFlash;
+
+        unlockFocus();
     }
 
-    private void a(CaptureRequest.Builder requestBuilder){
-        if (mFlashSupported) {
-            requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-        }
+    private void setFlashlightAuto() {
+
+
+        flashMode  = FlashMode.Auto;
+
+        unlockFocus();
     }
 
-    private void setAutoFlash(CaptureRequest.Builder requestBuilder) {
+
+    private void turnAutoFlash(CaptureRequest.Builder requestBuilder) {
         if (mFlashSupported) {
             requestBuilder.set(CaptureRequest.CONTROL_AE_MODE,
                     CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         }
     }
 
+    private void turnOnFlashOntakenPhoto(CaptureRequest.Builder requestBuilder){
+        if (mFlashSupported) {
+            requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+        }
+    }
+
+    private void turnOfFlashOntakenPhoto(CaptureRequest.Builder requestBuilder){
+        if (mFlashSupported) {
+            requestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+            requestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
+        }
+    }
+
+
+    public void setFlashMode(CaptureRequest.Builder requestBuilder){
+
+        switch (flashMode){
+            case Auto:
+                turnAutoFlash(requestBuilder);
+                break;
+            case Flash:
+                turnOnFlashOntakenPhoto(requestBuilder);
+                break;
+
+            case NoFlash:
+                turnOfFlashOntakenPhoto(requestBuilder);
+                break;
+
+        }
+
+    }
 
 
     public void switchCamera() {
@@ -1402,7 +1482,7 @@ public class CameraFragment extends Fragment
     /**
      * Start the camera preview.
      */
-    private void startPreview() {
+   /* private void startPreview() {
         if (null == mCameraDevice || !mTextureView.isAvailable() || null == mPreviewSize) {
             return;
         }
@@ -1431,7 +1511,7 @@ public class CameraFragment extends Fragment
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
 
     private void closePreviewSession() {
@@ -1456,7 +1536,7 @@ public class CameraFragment extends Fragment
     }
 
     private void setUpCaptureRequestBuilder(CaptureRequest.Builder builder) {
-        builder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+        setFlashMode(builder);
     }
 
     private void setUpMediaRecorder() throws IOException {
@@ -1503,6 +1583,8 @@ public class CameraFragment extends Fragment
             return;
         }
         try {
+
+
             closePreviewSession();
             setUpMediaRecorder();
             SurfaceTexture texture = mTextureView.getSurfaceTexture();
@@ -1563,12 +1645,18 @@ public class CameraFragment extends Fragment
         mMediaRecorder.reset();
 
 
+        //bunu ben ekledim...daha duzgun bir yol var mı bak
+        //createCameraPreviewSession();
 
+        reopenCamera();
     }
 
 
     private void displayVideoTime(){
-       time = 0;
+
+        binding.videoTimer.setText("0");
+        time = 0;
+
 
          videoHandler =  new Handler();
          videoRunnable = new Runnable() {
@@ -1589,6 +1677,7 @@ public class CameraFragment extends Fragment
 
         videoHandler.removeCallbacks(videoRunnable);
         binding.videoTimer.setVisibility(View.GONE);
+
     }
 
     private String setMediaFileName(){
@@ -1598,6 +1687,35 @@ public class CameraFragment extends Fragment
         Log.d("omer",date);
 
         return date;
+    }
+
+
+    private void addToAdapter (DataClass dataClass){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                if(checkCameraExits()){
+
+                    binding.recyclerView.setVisibility(View.VISIBLE);
+                    binding.btnNext.setVisibility(View.VISIBLE);
+                    adapter.addToList(dataClass);
+                }
+
+            }
+        }, 1500);
+
+    }
+
+
+    private boolean checkCameraExits(){
+
+        Fragment fragmentA = getActivity().getSupportFragmentManager().findFragmentByTag("Camera");
+        if (fragmentA == null) {
+            return false;
+        } else {
+           return true;
+        }
     }
 }
 

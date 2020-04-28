@@ -69,6 +69,7 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
                     Glide.with(context)
                             .load(new File(data.getPath()))
+                            .centerCrop()
                             .into(viewHolder.binding.takenPhoto);
                 }
 
@@ -86,6 +87,7 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 if(videoFile.exists()) {
                     Glide.with(context)
                             .asBitmap()
+                            .centerCrop()
                             .load(data.getPath())
                             .into(viewHolderVideo.binding.takenVideo);
                 }
@@ -148,5 +150,12 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
 
         }
+    }
+
+
+    public void addToList(DataClass data){
+
+        list.add(data);
+        notifyDataSetChanged();
     }
 }

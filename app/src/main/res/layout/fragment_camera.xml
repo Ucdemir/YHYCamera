@@ -8,16 +8,16 @@
     android:layout_height="match_parent"
     >
 
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-
         <yazilim.hilal.yesil.yhycamera.camera.AutoFitTextureView
             android:id="@+id/texture"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             />
+
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/flash"
@@ -67,7 +67,7 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/btnVideo"
-            android:layout_width="50dp"
+            android:layout_width="36dp"
             android:layout_height="50dp"
             android:layout_gravity="bottom|center"
             android:layout_marginStart="12dp"
@@ -77,9 +77,28 @@
 
             app:layout_constraintBottom_toTopOf="@+id/guideline"
             app:layout_constraintStart_toStartOf="@+id/guideline4"
-            app:srcCompat="@drawable/video">
+            app:srcCompat="@drawable/video_new"
+            android:tint="#ffffff"
+            >
 
         </androidx.appcompat.widget.AppCompatImageView>
+
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/btnNext"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom|center"
+            android:gravity="center_horizontal"
+            android:text="@string/picture"
+            app:layout_constraintBottom_toTopOf="@+id/guideline"
+            app:layout_constraintEnd_toStartOf="@+id/guideline3"
+            app:srcCompat="@drawable/next"
+            android:tint="#ffffff"
+            android:padding="12dp">
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
 
         <TextView
             android:id="@+id/videoTimer"
@@ -97,7 +116,6 @@
 
         </TextView>
 
-
         <androidx.recyclerview.widget.RecyclerView
             android:layout_width="0dp"
             android:layout_height="80dp"
@@ -105,9 +123,13 @@
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:layout_constraintStart_toStartOf="@+id/guideline4"
             app:layout_constraintTop_toTopOf="@+id/guideline"
-            android:id="@+id/recyclerView">
+            android:id="@+id/recyclerView"
+            android:background="#ffffff"
+            android:visibility="gone"
+            >
 
         </androidx.recyclerview.widget.RecyclerView>
+
 
 
         <androidx.constraintlayout.widget.Guideline
@@ -134,6 +156,8 @@
             android:layout_height="0dp"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.1" />
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
