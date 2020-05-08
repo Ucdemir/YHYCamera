@@ -1,6 +1,7 @@
 package yazilim.hilal.yesil.yhycamera.adapter;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +17,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import yazilim.hilal.yesil.yhycamera.R;
+import yazilim.hilal.yesil.yhycamera.activity.MainActivity;
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenPhotoBinding;
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenVideoBinding;
+import yazilim.hilal.yesil.yhycamera.fragments.CameraFragment;
+import yazilim.hilal.yesil.yhycamera.fragments.TakenFragment;
 import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
 
 public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private List<DataClass> list = new ArrayList<>();
+    public static List<DataClass> list;
 
 
     private LayoutInflater mInflater;
@@ -32,6 +36,9 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         mInflater = LayoutInflater.from(context);
         this.context = context;
+        if(list == null){
+            list = new ArrayList<>();
+        }
     }
 
     @NonNull
@@ -128,6 +135,7 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         @Override
         public void onClick(View v) {
 
+            startFragment(getAdapterPosition());
 
 
         }
@@ -147,9 +155,25 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         @Override
         public void onClick(View v) {
 
+            startFragment(getAdapterPosition());
+
+
+
 
 
         }
+    }
+
+
+    private void startFragment(int position){
+        TakenFragment fragment = new TakenFragment();
+
+        Bundle bundle = new Bundle();
+        bundle.putInt("currentItem",position);
+        fragment.setArguments(bundle);
+        getActivity().getSupportFragmentManager().beginTransaction()
+                .add(R.id.container, fragment).addToBackStack(null)
+                .commit();
     }
 
 
@@ -157,5 +181,9 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         list.add(data);
         notifyDataSetChanged();
+    }
+
+    private MainActivity getActivity(){
+        return (MainActivity)context;
     }
 }

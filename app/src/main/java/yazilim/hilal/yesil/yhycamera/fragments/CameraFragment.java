@@ -93,6 +93,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import yazilim.hilal.yesil.yhycamera.R;
+import yazilim.hilal.yesil.yhycamera.activity.MainActivity;
 import yazilim.hilal.yesil.yhycamera.adapter.DataAdapter;
 import yazilim.hilal.yesil.yhycamera.adapter.HorizantalSpaceItemDecoration;
 import yazilim.hilal.yesil.yhycamera.camera.AutoFitTextureView;
@@ -102,6 +103,9 @@ import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
 public class CameraFragment extends Fragment
         implements ActivityCompat.OnRequestPermissionsResultCallback {
 
+
+
+    private Context context;
     /**
      * Conversion from screen rotation to JPEG orientation.
      */
@@ -1710,12 +1714,26 @@ public class CameraFragment extends Fragment
 
     private boolean checkCameraExits(){
 
-        Fragment fragmentA = getActivity().getSupportFragmentManager().findFragmentByTag("Camera");
+        Fragment fragmentA = getMainActivity().getSupportFragmentManager().findFragmentByTag("Camera");
         if (fragmentA == null) {
             return false;
         } else {
            return true;
         }
+    }
+
+
+    private MainActivity getMainActivity(){
+
+        return (MainActivity) context;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+
+        this.context = context;
     }
 }
 
