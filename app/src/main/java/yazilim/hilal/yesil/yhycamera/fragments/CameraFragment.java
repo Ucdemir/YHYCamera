@@ -506,14 +506,13 @@ public class CameraFragment extends Fragment
 
         adapter = new DataAdapter(getActivity());
 
-        LinearLayoutManager llManager = new LinearLayoutManager(getActivity(),LinearLayoutManager.HORIZONTAL,
-                false);
+
 
 
 
 
         binding.recyclerView.setAdapter(adapter);
-        binding.recyclerView.setLayoutManager(llManager);
+
         binding.recyclerView.setFitsSystemWindows(true);
 
         binding.recyclerView.addItemDecoration( new HorizantalSpaceItemDecoration(32));
@@ -550,17 +549,17 @@ public class CameraFragment extends Fragment
         binding.btnVideo.setOnClickListener(v->{
 
            if(isVideo){
-               binding.btnTake.setImageResource(R.drawable.take_photo);
-               binding.btnVideo.setImageResource(R.drawable.video_new);
-               ImageViewCompat.setImageTintList(binding.btnVideo, ColorStateList.valueOf(getResources().getColor(R.color.white)));
-               ImageViewCompat.setImageTintList(binding.btnTake, ColorStateList.valueOf(getResources().getColor(R.color.white)));
+               binding.btnTake.setImageResource(R.drawable.selector_button_take);
+               binding.btnVideo.setImageResource(R.drawable.selector_video_new);
+              /* ImageViewCompat.setImageTintList(binding.btnVideo, ColorStateList.valueOf(getResources().getColor(R.color.white)));
+               ImageViewCompat.setImageTintList(binding.btnTake, ColorStateList.valueOf(getResources().getColor(R.color.white)));*/
 
 
            }else{
 
                binding.btnTake.setImageResource(R.drawable.video_start);
-               binding.btnVideo.setImageResource(R.drawable.take_photo);
-               ImageViewCompat.setImageTintList(binding.btnVideo, ColorStateList.valueOf(getResources().getColor(R.color.white)));
+               binding.btnVideo.setImageResource(R.drawable.selector_button_take);
+              //ImageViewCompat.setImageTintList(binding.btnVideo, ColorStateList.valueOf(getResources().getColor(R.color.white)));
                ImageViewCompat.setImageTintList(binding.btnTake,null);
 
            }

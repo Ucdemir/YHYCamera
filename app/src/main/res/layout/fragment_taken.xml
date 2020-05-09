@@ -25,7 +25,7 @@
 
             android:layout_alignParentBottom="true"
 
-            android:layout_marginBottom="48dp"
+            android:layout_marginBottom="72dp"
             app:piv_animationType="drop"
             app:piv_dynamicCount="true"
             app:piv_interactiveAnimation="true"
@@ -34,6 +34,26 @@
             app:piv_viewPager="@id/viewPager"
             attrs:piv_padding="12dp"
             attrs:piv_radius="8dp" />
+
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="19dp"
+            android:text="@string/return_"
+            android:textColor="#000000"
+            android:gravity="center"
+            android:textSize="21sp"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/selector_button_return"
+            android:clickable="true"
+            android:id="@+id/btnReturn">
+
+        </androidx.appcompat.widget.AppCompatButton>
+
+
+
 
     </RelativeLayout>
 </layout>

@@ -2,6 +2,7 @@ package yazilim.hilal.yesil.yhycamera.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,9 +79,16 @@ public class TakenFragment extends Fragment {
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 binding.pageIndicator.setSelection(position);
- 
+
 
             }
+        });
+
+
+
+        binding.btnReturn.setOnClickListener(v->{
+
+            Log.d("TAG","aaa");
         });
         return view;
     }

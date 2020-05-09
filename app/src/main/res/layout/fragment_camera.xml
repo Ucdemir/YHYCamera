@@ -41,11 +41,11 @@
             android:layout_gravity="bottom|center"
             android:gravity="center_horizontal"
             android:text="@string/picture"
-            android:tint="#ffffff"
+
 
             app:layout_constraintStart_toStartOf="@+id/guideline4"
             app:layout_constraintTop_toTopOf="@+id/guideline2"
-            app:srcCompat="@drawable/camera_switch">
+            app:srcCompat="@drawable/selector_camera_switch">
 
         </androidx.appcompat.widget.AppCompatImageView>
 
@@ -59,7 +59,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/take_photo"
+        app:srcCompat="@drawable/selector_button_take"
         android:tint="#ffffff">
 
     </androidx.appcompat.widget.AppCompatImageView>
@@ -70,15 +70,15 @@
             android:layout_width="36dp"
             android:layout_height="50dp"
             android:layout_gravity="bottom|center"
-            android:layout_marginStart="12dp"
+
             android:gravity="center_horizontal"
             android:text="@string/picture"
 
 
             app:layout_constraintBottom_toTopOf="@+id/guideline"
             app:layout_constraintStart_toStartOf="@+id/guideline4"
-            app:srcCompat="@drawable/video_new"
-            android:tint="#ffffff"
+            app:srcCompat="@drawable/selector_video_new"
+
             >
 
         </androidx.appcompat.widget.AppCompatImageView>
@@ -93,9 +93,9 @@
             android:text="@string/picture"
             app:layout_constraintBottom_toTopOf="@+id/guideline"
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
-            app:srcCompat="@drawable/next"
-            android:tint="#ffffff"
-            android:padding="12dp">
+            app:srcCompat="@drawable/selector_next"
+            android:padding="12dp"
+            android:clickable="true">
 
         </androidx.appcompat.widget.AppCompatImageView>
 
@@ -126,7 +126,9 @@
             android:id="@+id/recyclerView"
             android:background="#ffffff"
             android:visibility="gone"
-            >
+
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
 
         </androidx.recyclerview.widget.RecyclerView>
 
