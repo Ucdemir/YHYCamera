@@ -54,6 +54,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.databinding.DataBindingUtil;
@@ -96,9 +97,11 @@ import yazilim.hilal.yesil.yhycamera.R;
 import yazilim.hilal.yesil.yhycamera.activity.MainActivity;
 import yazilim.hilal.yesil.yhycamera.adapter.DataAdapter;
 import yazilim.hilal.yesil.yhycamera.adapter.HorizantalSpaceItemDecoration;
+import yazilim.hilal.yesil.yhycamera.adapter.VerticalSpaceItemDecoration;
 import yazilim.hilal.yesil.yhycamera.camera.AutoFitTextureView;
 import yazilim.hilal.yesil.yhycamera.databinding.FragmentCameraBinding;
 import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
+import yazilim.hilal.yesil.yhycamera.view.CameraViews;
 
 public class CameraFragment extends Fragment
         implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -122,7 +125,7 @@ public class CameraFragment extends Fragment
     private MediaRecorder mMediaRecorder;
 
     private boolean isVideo = false;
-    public boolean mIsRecordingVideo = false;
+    private static boolean mIsRecordingVideo = false;
 
     public static final String CAMERA_FRONT = "1";
     public static final String CAMERA_BACK = "0";
@@ -160,7 +163,7 @@ public class CameraFragment extends Fragment
 
 
 
-    private enum FlashMode{
+    public enum FlashMode{
         Flash,NoFlash,Auto
     }
 
@@ -496,136 +499,143 @@ public class CameraFragment extends Fragment
         return new CameraFragment();
     }
 
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-         binding = DataBindingUtil.inflate(
-                inflater, R.layout.fragment_camera, container, false);
-        View view = binding.getRoot();
+            binding = DataBindingUtil.inflate(
+                    inflater, R.layout.fragment_camera, container, false);
 
-        adapter = new DataAdapter(getActivity());
+            View view = binding.getRoot();
 
-
-
+            adapter = new DataAdapter(getActivity());
 
 
-
-        binding.recyclerView.setAdapter(adapter);
-
-        binding.recyclerView.setFitsSystemWindows(true);
-
-        binding.recyclerView.addItemDecoration( new HorizantalSpaceItemDecoration(32));
-
-
-        binding.flash.setOnClickListener(v->{
-
-
-            if(flashMode == FlashMode.NoFlash){
-                binding.flash.setImageResource(R.drawable.flash);
-                setFlashlightOn();
-                flashMode = FlashMode.Flash;
-
-            }else if(flashMode == FlashMode.Flash){
-                binding.flash.setImageResource(R.drawable.flash_auto);
-                setFlashlightAuto();
-                flashMode = FlashMode.Auto;
+            binding.recyclerView.setAdapter(adapter);
+            binding.recyclerView.setFitsSystemWindows(true);
+            int currentOrientation = getResources().getConfiguration().orientation;
+            if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+                binding.recyclerView.addItemDecoration(new VerticalSpaceItemDecoration(32));
             }
-            else{
-                binding.flash.setImageResource(R.drawable.no_flash);
-                flashMode = FlashMode.NoFlash;
-                setFlashlightOff();
+            else {
+                binding.recyclerView.addItemDecoration(new HorizantalSpaceItemDecoration(32));
             }
 
-        });
 
-        binding.btnSwitch.setOnClickListener(v->{
+            if(mIsRecordingVideo){
 
-            switchCamera();
+                binding.videoTimer.setVisibility(View.GONE);
+            }
 
-        });
+            initViews();
 
-
-        binding.btnVideo.setOnClickListener(v->{
-
-           if(isVideo){
-               binding.btnTake.setImageResource(R.drawable.selector_button_take);
-               binding.btnVideo.setImageResource(R.drawable.selector_video_new);
-              /* ImageViewCompat.setImageTintList(binding.btnVideo, ColorStateList.valueOf(getResources().getColor(R.color.white)));
-               ImageViewCompat.setImageTintList(binding.btnTake, ColorStateList.valueOf(getResources().getColor(R.color.white)));*/
+            binding.flash.setOnClickListener(v -> {
 
 
-           }else{
+                if (flashMode == FlashMode.NoFlash) {
+                    CameraViews.getInstance().getViewFlash().setImage(R.drawable.flash).setMode(FlashMode.Flash);
+                    binding.flash.setImageResource(R.drawable.flash);
+                    setFlashlightOn();
+                    flashMode = FlashMode.Flash;
 
-               binding.btnTake.setImageResource(R.drawable.video_start);
-               binding.btnVideo.setImageResource(R.drawable.selector_button_take);
-              //ImageViewCompat.setImageTintList(binding.btnVideo, ColorStateList.valueOf(getResources().getColor(R.color.white)));
-               ImageViewCompat.setImageTintList(binding.btnTake,null);
+                } else if (flashMode == FlashMode.Flash) {
+                    CameraViews.getInstance().getViewFlash().setImage(R.drawable.flash_auto).setMode(FlashMode.Auto);
+                    binding.flash.setImageResource(R.drawable.flash_auto);
+                    setFlashlightAuto();
+                    flashMode = FlashMode.Auto;
+                } else {
+                    CameraViews.getInstance().getViewFlash().setImage(R.drawable.no_flash).setMode(FlashMode.NoFlash);
+                    binding.flash.setImageResource(R.drawable.no_flash);
+                    flashMode = FlashMode.NoFlash;
+                    setFlashlightOff();
+                }
 
-           }
+            });
 
-           isVideo = !isVideo;
+            binding.btnSwitch.setOnClickListener(v -> {
 
-        });
+                switchCamera();
+
+            });
 
 
-        binding.btnTake.setOnClickListener(v->{
+            binding.btnVideo.setOnClickListener(v -> {
 
-            if(isVideo){
+                isVideo = !isVideo;
+                initVisibleVideoPhotoImage(isVideo);
+                CameraViews.getInstance().getViewVideoAndTakePicture().setVideo(isVideo);
 
-                if(mIsRecordingVideo){
-                    binding.videoTimer.setVisibility(View.GONE);
-                    stopRecordingVideo();
-                    stopVideoTime();
+            });
 
-                    addToGaleryVideo();
+
+            binding.btnTake.setOnClickListener(v -> {
+
+                if (isVideo) {
+
+                    if (mIsRecordingVideo) {
+                        binding.videoTimer.setVisibility(View.GONE);
+                        stopRecordingVideo();
+                        stopVideoTime();
+
+                        addToGaleryVideo();
+
+
+                        DataClass data = new DataClass();
+                        data.setPath(mFile.getAbsolutePath());
+                        data.setType(DataClass.DataType.Video);
+
+
+                        addToAdapter(data);
+
+
+                    } else {
+
+                        binding.videoTimer.setVisibility(View.VISIBLE);
+                        videoRoot.mkdirs();
+                        mFile = new File(videoRoot, setMediaFileName() + ".mp4");
+
+                        displayVideoTime();
+                        startRecordingVideo();
+
+                    }
+
+                } else {
+
+                    imageRoot.mkdirs();
+                    mFile = new File(imageRoot, setMediaFileName() + ".jpg");
+                    takePicture();
+
+                    addToGaleryPicture();
 
 
                     DataClass data = new DataClass();
                     data.setPath(mFile.getAbsolutePath());
-                    data.setType(DataClass.DataType.Video);
+                    data.setType(DataClass.DataType.Photo);
 
 
                     addToAdapter(data);
 
 
-
-                }else{
-
-                    binding.videoTimer.setVisibility(View.VISIBLE);
-                    videoRoot.mkdirs();
-                    mFile = new File(videoRoot, setMediaFileName()+".mp4");
-
-                    displayVideoTime();
-                    startRecordingVideo();
-
                 }
 
-            }else{
+            });
+            setMediaFileName();
 
-                imageRoot.mkdirs();
-                mFile = new File(imageRoot, setMediaFileName()+".jpg");
-                takePicture();
+            return view;
 
-                addToGaleryPicture();
-
-
-                DataClass data = new DataClass();
-                data.setPath(mFile.getAbsolutePath());
-                data.setType(DataClass.DataType.Photo);
-
-
-                addToAdapter(data);
-
-
-
-            }
-
-        });
-
-
-        setMediaFileName();
-        return view;
     }
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
@@ -1404,12 +1414,16 @@ public class CameraFragment extends Fragment
 
     public void switchCamera() {
         if (cameraId.equals(CAMERA_FRONT)) {
+            CameraViews.getInstance().getActiveModel().setCameraId(CAMERA_BACK);
+
             cameraId = CAMERA_BACK;
             closeCamera();
             reopenCamera();
 
 
         } else if (cameraId.equals(CAMERA_BACK)) {
+            CameraViews.getInstance().getActiveModel().setCameraId(CAMERA_FRONT);
+
             cameraId = CAMERA_FRONT;
             closeCamera();
             reopenCamera();
@@ -1700,9 +1714,9 @@ public class CameraFragment extends Fragment
 
                 if(checkCameraExits()){
 
-                    binding.recyclerView.setVisibility(View.VISIBLE);
-                    binding.btnNext.setVisibility(View.VISIBLE);
+                    addedDataSetVisible();
                     adapter.addToList(dataClass);
+                    CameraViews.getInstance().getViewIsThereData().setTheredata(true);
                 }
 
             }
@@ -1734,5 +1748,57 @@ public class CameraFragment extends Fragment
 
         this.context = context;
     }
+
+    private void addedDataSetVisible(){
+        binding.recyclerView.setVisibility(View.VISIBLE);
+        binding.btnNext.setVisibility(View.VISIBLE);
+    }
+
+    private void setInvisibleData(){
+        binding.recyclerView.setVisibility(View.GONE);
+        binding.btnNext.setVisibility(View.GONE);
+    }
+
+    private void initVisibleVideoPhotoImage(boolean isVideo) {
+
+        if(isVideo){
+
+            binding.btnTake.setImageResource(R.drawable.video_start);
+            binding.btnVideo.setImageResource(R.drawable.selector_button_take);
+            ImageViewCompat.setImageTintList(binding.btnTake, null);
+
+        }else{
+
+
+
+            binding.btnTake.setImageResource(R.drawable.selector_button_take);
+            binding.btnVideo.setImageResource(R.drawable.selector_video_new);
+        }
+
+
+    }
+    private void initViews(){
+
+        CameraViews.ViewFlash viewFlash = CameraViews.getInstance().getViewFlash();
+        binding.flash.setImageResource(viewFlash.getImage());
+        flashMode = viewFlash.getMode();
+
+        cameraId = CameraViews.getInstance().getActiveModel().getCameraId();
+
+        isVideo = CameraViews.getInstance().getViewVideoAndTakePicture().isVideo();
+
+        initVisibleVideoPhotoImage(isVideo);
+
+        boolean isThereData = CameraViews.getInstance().getViewIsThereData().isTheredata();
+
+        if(isThereData){
+            addedDataSetVisible();
+        }else{
+            setInvisibleData();
+        }
+
+        mIsRecordingVideo = false;
+    }
+
 }
 

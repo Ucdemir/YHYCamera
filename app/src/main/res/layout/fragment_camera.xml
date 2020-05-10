@@ -95,7 +95,8 @@
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:srcCompat="@drawable/selector_next"
             android:padding="12dp"
-            android:clickable="true">
+            android:clickable="true"
+            android:visibility="gone">
 
         </androidx.appcompat.widget.AppCompatImageView>
 

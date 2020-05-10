@@ -87,8 +87,8 @@ public class TakenFragment extends Fragment {
 
 
         binding.btnReturn.setOnClickListener(v->{
+        getActivity().getSupportFragmentManager().popBackStack();
 
-            Log.d("TAG","aaa");
         });
         return view;
     }
