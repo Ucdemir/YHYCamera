@@ -32,6 +32,7 @@ import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
+import android.graphics.drawable.Drawable;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -42,9 +43,11 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.AudioManager;
 import android.media.CamcorderProfile;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaActionSound;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.nfc.Tag;
@@ -73,10 +76,17 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -600,6 +610,8 @@ public class CameraFragment extends Fragment
 
                         addToAdapter(data);
 
+                        showToast("Saved: " + mFile);
+
 
                     } else {
 
@@ -618,15 +630,7 @@ public class CameraFragment extends Fragment
                     mFile = new File(imageRoot, setMediaFileName() + ".jpg");
                     takePicture();
 
-                    addToGaleryPicture();
 
-
-                    DataClass data = new DataClass();
-                    data.setPath(mFile.getAbsolutePath());
-                    data.setType(DataClass.DataType.Photo);
-
-
-                    addToAdapter(data);
 
 
                 }
@@ -637,6 +641,9 @@ public class CameraFragment extends Fragment
             return view;
 
     }
+
+
+
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
 
@@ -1087,6 +1094,24 @@ public class CameraFragment extends Fragment
                     showToast("Saved: " + mFile);
                     Log.d(TAG, mFile.toString());
                     unlockFocus();
+
+
+
+
+                    getMainActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            startTakenPictureAnimation(mFile.getAbsolutePath());
+                            MediaActionSound sound = new MediaActionSound();
+                            sound.play(MediaActionSound.SHUTTER_CLICK);
+
+                            addToGaleryPicture();
+                        }
+                    });
+
+
+
                 }
             };
 
@@ -1291,6 +1316,13 @@ public class CameraFragment extends Fragment
         catch (Exception c){
 
         }
+
+        DataClass data = new DataClass();
+        data.setPath(mFile.getAbsolutePath());
+        data.setType(DataClass.DataType.Photo);
+
+
+        addToAdapter(data);
     }
 
     private void addToGaleryVideo(){
@@ -1698,7 +1730,7 @@ public class CameraFragment extends Fragment
     }
 
     private String setMediaFileName(){
-        DateFormat df = new SimpleDateFormat("dd-MMMM-yyyy-h:m");
+        DateFormat df = new SimpleDateFormat("dd-MMM-yyyy-h:m:s");
         Date todaysDate = new Date();
         String date = df.format(todaysDate);
         Log.d("omer",date);
@@ -1798,6 +1830,53 @@ public class CameraFragment extends Fragment
         }
 
         mIsRecordingVideo = false;
+    }
+
+
+    private void startTakenPictureAnimation(String path){
+        Animation animation = AnimationUtils.loadAnimation(getMainActivity(),
+                R.anim.animation_taken_picture);
+
+        Glide.with(context)
+                .load(new File(path))
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        binding.takenPicture.setVisibility(View.VISIBLE);
+                        binding.takenPicture.startAnimation(animation);
+                        return false;
+                    }
+                })
+                .centerCrop()
+                .into(binding.takenPicture);
+
+
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+                binding.takenPicture.setVisibility(View.GONE);
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+
+
     }
 
 }

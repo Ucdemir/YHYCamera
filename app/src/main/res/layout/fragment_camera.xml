@@ -9,15 +9,20 @@
     >
 
 
+
+
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+
         <yazilim.hilal.yesil.yhycamera.camera.AutoFitTextureView
             android:id="@+id/texture"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            />
-
+            tools:layout_editor_absoluteX="16dp"
+            tools:layout_editor_absoluteY="-63dp" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/flash"
@@ -133,7 +138,20 @@
 
         </androidx.recyclerview.widget.RecyclerView>
 
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/takenPicture"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/guideline"
+            app:layout_constraintEnd_toStartOf="@+id/guideline3"
+            app:layout_constraintStart_toStartOf="@+id/guideline4"
+            app:layout_constraintTop_toTopOf="@+id/guideline2"
+            android:padding="3dp"
+            android:background="#ffffff"
+            >
 
+        </androidx.appcompat.widget.AppCompatImageView>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline"
