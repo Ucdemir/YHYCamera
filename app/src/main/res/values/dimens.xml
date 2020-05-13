@@ -1,0 +1,6 @@
+<resources>
+    <dimen name="radius">44px</dimen>
+    <dimen name="stroke">10px</dimen>
+
+
+</resources>

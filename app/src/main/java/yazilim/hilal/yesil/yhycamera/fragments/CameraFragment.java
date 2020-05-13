@@ -17,6 +17,10 @@
 package yazilim.hilal.yesil.yhycamera.fragments;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -27,9 +31,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
@@ -39,9 +47,11 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.MeteringRectangle;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.AudioManager;
 import android.media.CamcorderProfile;
@@ -58,6 +68,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.solver.widgets.Rectangle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.databinding.DataBindingUtil;
@@ -72,12 +83,14 @@ import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -112,6 +125,7 @@ import yazilim.hilal.yesil.yhycamera.camera.AutoFitTextureView;
 import yazilim.hilal.yesil.yhycamera.databinding.FragmentCameraBinding;
 import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
 import yazilim.hilal.yesil.yhycamera.view.CameraViews;
+import yazilim.hilal.yesil.yhycamera.view.FocusView;
 
 public class CameraFragment extends Fragment
         implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -172,7 +186,8 @@ public class CameraFragment extends Fragment
             Environment.DIRECTORY_MOVIES).getAbsolutePath(), appDirectoryNameVideos);
 
 
-
+    private boolean mManualFocusEngaged = false;
+    private CameraCharacteristics characteristics;
     public enum FlashMode{
         Flash,NoFlash,Auto
     }
@@ -434,9 +449,34 @@ public class CameraFragment extends Fragment
         public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                        @NonNull CaptureRequest request,
                                        @NonNull TotalCaptureResult result) {
+
+
             process(result);
+
+
+            //focus icin sonradan eklendi
+            mManualFocusEngaged = false;
+
+            if (request.getTag() == "FOCUS_TAG") {
+                try {
+                    //the focus trigger is complete -
+                    //resume repeating (preview surface will get frames), clear AF trigger
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, null);
+                    mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(),
+                            mCaptureCallback, mBackgroundHandler);
+                }catch (Exception e){
+
+                }
+            }
+
+            //----------
         }
 
+        @Override
+        public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+            super.onCaptureFailed(session, request, failure);
+            mManualFocusEngaged = false;
+        }
     };
 
     /**
@@ -649,6 +689,81 @@ public class CameraFragment extends Fragment
 
 
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+
+
+
+
+        mTextureView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+
+
+                try {
+                    final int actionMasked = event.getActionMasked();
+                    if (actionMasked != MotionEvent.ACTION_DOWN) {
+                        return false;
+                    }
+                    if (mManualFocusEngaged) {
+                        Log.d(TAG, "Manual focus already engaged");
+                        return true;
+                    }
+                   /* CameraCharacteristics characteristics
+                            = manager.getCameraCharacteristics(cameraId);*/
+
+                    final Rect sensorArraySize = characteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+
+                    //TODO: here I just flip x,y, but this needs to correspond with the sensor orientation (via SENSOR_ORIENTATION)
+                    final int y = (int) ((event.getX() / (float) view.getWidth()) * (float) sensorArraySize.height());
+                    final int x = (int) ((event.getY() / (float) view.getHeight()) * (float) sensorArraySize.width());
+                    final int halfTouchWidth = 150; //(int)motionEvent.getTouchMajor(); //TODO: this doesn't represent actual touch size in pixel. Values range in [3, 10]...
+                    final int halfTouchHeight = 150; //(int)motionEvent.getTouchMinor();
+                    MeteringRectangle focusAreaTouch = new MeteringRectangle(Math.max(x - halfTouchWidth, 0),
+                            Math.max(y - halfTouchHeight, 0),
+                            halfTouchWidth * 2,
+                            halfTouchHeight * 2,
+                            MeteringRectangle.METERING_WEIGHT_MAX - 1);
+
+
+                    FocusView view = new FocusView(context,(int)event.getX(),(int)event.getY());
+
+                    binding.frameLayout.addView(view);
+
+
+                    focusViewAnimation(view);
+
+
+
+                    //first stop the existing repeating request
+                    mCaptureSession.stopRepeating();
+
+                    //cancel any existing AF trigger (repeated touches, etc.)
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+                    mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler);
+
+                    //Now add a new AF trigger with focus region
+                    if (isMeteringAreaAFSupported()) {
+                        mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_REGIONS, new MeteringRectangle[]{focusAreaTouch});
+                    }
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
+                    mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+                    mPreviewRequestBuilder.setTag("FOCUS_TAG"); //we'll capture this later for resuming the preview
+
+                    //then we ask for a single request (not repeating!)
+                    mCaptureSession.capture(mPreviewRequestBuilder.build(), mCaptureCallback, mBackgroundHandler);
+                    mManualFocusEngaged = true;
+
+
+                }catch (Exception e){
+
+                }
+
+
+                return true;
+            }
+        });
     }
 
     @Override
@@ -718,7 +833,7 @@ public class CameraFragment extends Fragment
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
 
-                CameraCharacteristics characteristics
+                 characteristics
                         = manager.getCameraCharacteristics(cameraId);
 
 
@@ -836,7 +951,7 @@ public class CameraFragment extends Fragment
             //------------ addlater on video
 
 
-            CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
+             characteristics = manager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap map = characteristics
                     .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
@@ -1346,22 +1461,6 @@ public class CameraFragment extends Fragment
     }
 
     private void setFlashlightOn() {
-       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-
-                mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
-            } catch (CameraAccessException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
-           /* mCamera = Camera.open();
-            parameters = mCamera.getParameters();
-            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-            mCamera.setParameters(parameters);
-            mCamera.startPreview();
-        }*/
 
        flashMode  = FlashMode.Flash;
 
@@ -1372,22 +1471,7 @@ public class CameraFragment extends Fragment
     }
 
     private void setFlashlightOff() {
-       /* if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            try {
-                mPreviewRequestBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
-                mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
 
-                mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, null);
-            } catch (CameraAccessException e) {
-                Log.e(TAG, e.toString());
-            }
-        } else {
-           /* mCamera = Camera.open();
-            parameters = mCamera.getParameters();
-            parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-            mCamera.setParameters(parameters);
-            mCamera.stopPreview();
-        }*/
 
         flashMode  = FlashMode.NoFlash;
 
@@ -1838,7 +1922,7 @@ public class CameraFragment extends Fragment
                 R.anim.animation_taken_picture);
 
         Glide.with(context)
-                .load(new File(path))
+                .load(path)
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
@@ -1851,6 +1935,9 @@ public class CameraFragment extends Fragment
                         binding.takenPicture.startAnimation(animation);
                         return false;
                     }
+
+
+
                 })
                 .centerCrop()
                 .into(binding.takenPicture);
@@ -1877,6 +1964,29 @@ public class CameraFragment extends Fragment
 
 
 
+    }
+
+    private boolean isMeteringAreaAFSupported() {
+        return characteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) >= 1;
+    }
+
+
+    private void focusViewAnimation(View v){
+
+        v.animate().scaleX(0.4f).scaleY(0.4f).setDuration(400).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                v.animate().scaleX(0.6f).scaleY(0.6f).setDuration(500).setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        super.onAnimationEnd(animation);
+                        binding.frameLayout.removeView(v);
+                    }
+                });
+
+            }
+        });
     }
 
 }

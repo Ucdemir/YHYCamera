@@ -6,6 +6,7 @@
 
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/frameLayout"
     >
 
 
@@ -21,8 +22,7 @@
             android:id="@+id/texture"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:layout_editor_absoluteX="16dp"
-            tools:layout_editor_absoluteY="-63dp" />
+           />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/flash"
@@ -142,7 +142,7 @@
             android:id="@+id/takenPicture"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:visibility="gone"
+            android:visibility="invisible"
             app:layout_constraintBottom_toTopOf="@+id/guideline"
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:layout_constraintStart_toStartOf="@+id/guideline4"
@@ -180,6 +180,7 @@
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </FrameLayout>
 </layout>

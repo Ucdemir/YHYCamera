@@ -2,6 +2,7 @@ package yazilim.hilal.yesil.yhycamera.camera;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.TextureView;
 
 public class AutoFitTextureView extends TextureView {
@@ -53,5 +54,8 @@ public class AutoFitTextureView extends TextureView {
             }
         }
     }
+
+
+
 
 }
