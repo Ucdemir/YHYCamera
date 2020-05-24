@@ -20,5 +20,7 @@ public class MainActivity extends AppCompatActivity {
                     .replace(R.id.container, CameraFragment.newInstance(),"Camera")
                     .commit();
         }
+
+        //
     }
 }
