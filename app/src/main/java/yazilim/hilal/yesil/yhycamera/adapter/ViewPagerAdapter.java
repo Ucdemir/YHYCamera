@@ -1,7 +1,10 @@
 package yazilim.hilal.yesil.yhycamera.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
 import android.view.*;
 import android.widget.*;
 
@@ -9,6 +12,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,8 +33,13 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private LayoutInflater mInflater;
     private Context context;
 
+    private int delay = 500;
+    private Handler handler = new Handler();
 
 
+    private static boolean isVideoPlayying = false;
+
+    private boolean isVideoPlaying  = false;
 
     public ViewPagerAdapter(Context context) {
         this.mInflater = LayoutInflater.from(context);
@@ -100,12 +110,89 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
 
 
+
+
                    viewHolderVideo.binding.videoView.setVideoPath(data.getPath());
                    viewHolderVideo.binding.videoView.seekTo(1);
 
 
                    viewHolderVideo.binding.btnPlay.setOnClickListener(v -> {
-                       MediaController mediaController = new MediaController(context);
+
+
+                       isVideoPlaying = true;
+
+
+                       viewHolderVideo.binding.btnPlay.setVisibility(View.GONE);
+                       MediaController mediaController = new MediaController(context){
+
+                           @Override
+                           public boolean dispatchKeyEvent(KeyEvent event) {
+                               if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                                   super.hide();
+
+                                   viewHolderVideo.binding.videoView.setMediaController(null);
+                                   viewHolderVideo.binding.videoView.setMediaController(this);
+                                   handler.removeCallbacksAndMessages(null);
+
+                                   ((AppCompatActivity) getContext()).getSupportFragmentManager().popBackStack();
+
+
+
+                                   return true;
+                               }
+                               return super.dispatchKeyEvent(event);
+                           }
+                       };
+
+
+
+                       mediaController.show(0);
+                       viewHolderVideo.binding.videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener(){
+
+
+
+                           @Override
+                           public void onCompletion(MediaPlayer mp) {
+
+
+                               viewHolderVideo.binding.btnPlay.setVisibility(View.VISIBLE);
+
+                               viewHolderVideo.binding.videoView.setMediaController(null);
+                               viewHolderVideo.binding.videoView.setMediaController(mediaController);
+                               handler.removeCallbacksAndMessages(null);
+                               isVideoPlaying = false;
+
+                           }
+
+
+                       });
+                       viewHolderVideo.binding.videoView.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                           @Override
+                           public boolean onInfo(MediaPlayer mp, int what, int extra) {
+
+
+
+
+
+                               if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                                         handler.postDelayed(
+                                                 new Runnable() {
+                                                     public void run() {
+                                                         mediaController.show(0);
+                                                         handler.postDelayed(this, delay);;
+                                   }},
+                               delay);
+
+                                   return true;
+                               }
+                               return false;
+                           }
+
+
+                       });
+
+
+
                        mediaController.setAnchorView(viewHolderVideo.binding.videoView);
 
 
@@ -117,6 +204,8 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                        viewHolderVideo.binding.videoView.setVideoURI(uri);
                        viewHolderVideo.binding.videoView.requestFocus();
                        viewHolderVideo.binding.videoView.start();
+
+
 
 
                    });
@@ -153,7 +242,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     }
 
 
-    public class ViewHolderVideo extends RecyclerView.ViewHolder {
+    public class ViewHolderVideo extends RecyclerView.ViewHolder  {
 
         private AdapterPlayVideoBinding binding;
 
@@ -161,7 +250,10 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             super(itemView);
             this.binding = binding;
 
+
         }
+
+
     }
 
 

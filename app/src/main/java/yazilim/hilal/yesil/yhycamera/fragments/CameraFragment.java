@@ -637,6 +637,7 @@ public class CameraFragment extends Fragment
 
                     if (mIsRecordingVideo) {
                         binding.videoTimer.setVisibility(View.GONE);
+                        binding.btnTake.setImageResource(R.drawable.video_start);
                         stopRecordingVideo();
                         stopVideoTime();
 
@@ -654,7 +655,7 @@ public class CameraFragment extends Fragment
 
 
                     } else {
-
+                        binding.btnTake.setImageResource(R.drawable.video_stop);
                         binding.videoTimer.setVisibility(View.VISIBLE);
                         videoRoot.mkdirs();
                         mFile = new File(videoRoot, setMediaFileName() + ".mp4");

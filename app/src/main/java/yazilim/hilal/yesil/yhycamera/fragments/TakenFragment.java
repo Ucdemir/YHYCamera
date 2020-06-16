@@ -23,11 +23,11 @@ import yazilim.hilal.yesil.yhycamera.databinding.FragmentTakenBinding;
 public class TakenFragment extends Fragment {
 
 
-    private FragmentTakenBinding binding;
+    private static FragmentTakenBinding binding;
 
     private Context context;
 
-
+    private  ViewPagerAdapter adapter;
 
     private int currentItem;
 
@@ -45,7 +45,8 @@ public class TakenFragment extends Fragment {
         View view = binding.getRoot();
 
 
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getMainActivity());
+        adapter = new ViewPagerAdapter(getMainActivity());
+
 
         binding.viewPager.setAdapter(adapter);
 
@@ -99,5 +100,11 @@ public class TakenFragment extends Fragment {
         return (MainActivity) context;
     }
 
+
+    public static void shouldViewPagerSwipre(boolean isShould){
+
+            binding.viewPager.setUserInputEnabled(isShould);
+
+    }
 
 }
