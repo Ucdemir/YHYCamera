@@ -197,7 +197,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                        @Override
                        public void hideContoller() {
 
-                           
+
                            viewHolderVideo.binding.btnPlay.setVisibility(View.VISIBLE);
                            viewHolderVideo.binding.videoView.setMediaController(null);
                            viewHolderVideo.binding.videoView.setMediaController(mediaController);
