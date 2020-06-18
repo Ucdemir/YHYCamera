@@ -69,8 +69,7 @@ public class TakenFragment extends Fragment {
 
         }
         binding.viewPager.setOffscreenPageLimit(1);
-
-
+      
 
 
 
@@ -87,6 +86,8 @@ public class TakenFragment extends Fragment {
                     listenerHideMediaController.hideContoller();
 
                 }
+
+
 
                // adapter.notifyDataSetChanged();
             }

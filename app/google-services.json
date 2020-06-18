@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "473266292211",
+    "firebase_url": "https://yhycamera.firebaseio.com",
+    "project_id": "yhycamera",
+    "storage_bucket": "yhycamera.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:473266292211:android:84b3a5e2772c769350fe86",
+        "android_client_info": {
+          "package_name": "yazilim.hilal.yesil.yhycamera"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "473266292211-mvtnu7bhp2kk93ta86hpk9usq2io3k17.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXjcZQfJl1Ui2eQ1guTRiPjvLwhAQoOIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "473266292211-mvtnu7bhp2kk93ta86hpk9usq2io3k17.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
