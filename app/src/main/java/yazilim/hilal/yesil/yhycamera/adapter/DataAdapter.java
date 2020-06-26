@@ -255,4 +255,7 @@ public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private MainActivity getActivity(){
         return (MainActivity)context;
     }
+
+
+
 }

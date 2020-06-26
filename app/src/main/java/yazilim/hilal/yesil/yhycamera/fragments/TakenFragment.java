@@ -81,11 +81,11 @@ public class TakenFragment extends Fragment {
             public void onPageScrollStateChanged(int state) {
                 super.onPageScrollStateChanged(state);
 
-                if(listenerHideMediaController != null) {
+               /* if(listenerHideMediaController != null) {
 
                     listenerHideMediaController.hideContoller();
 
-                }
+                }*/
 
 
 
@@ -95,12 +95,20 @@ public class TakenFragment extends Fragment {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+
+             /*   if(ViewPagerAdapter.checkIsItVideo(position)){
+
+                    adapter.notifyItemChanged(position);
+                }*/
             }
 
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 binding.pageIndicator.setSelection(position);
+
+
+
 
 
             }

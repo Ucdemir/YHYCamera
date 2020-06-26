@@ -2,9 +2,13 @@ package yazilim.hilal.yesil.yhycamera.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.*;
 import android.widget.*;
 
@@ -111,11 +115,17 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
 
 
+           
+
+                 /*  Glide.with(context)
+                           .asBitmap()
+                           .centerCrop()
+                           .load(data.getPath())
+                           .into(viewHolderVideo.binding.takenVideo);*/
 
 
-
-                   viewHolderVideo.binding.videoView.setVideoPath(data.getPath());
-                   viewHolderVideo.binding.videoView.seekTo(randomSeekNumber());
+                 //  viewHolderVideo.binding.videoView.setVideoPath(data.getPath());
+                   //viewHolderVideo.binding.videoView.seekTo(randomSeekNumber());
 
                    viewHolderVideo.binding.btnPlay.setClickable(false);
 
@@ -386,4 +396,24 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
 
     }*/
+
+
+    public static boolean checkIsItVideo(int position){
+
+        DataClass data = DataAdapter.list.get(position);
+
+        switch (data.getType()){
+
+            case Photo:
+
+                return false;
+
+            case Video:
+
+                return true;
+        }
+
+
+        return  false;
+    }
 }
