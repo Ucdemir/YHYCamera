@@ -1,24 +1,16 @@
 package yazilim.hilal.yesil.yhycamera.adapter;
 
-import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaPlayer;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.view.*;
 import android.widget.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,22 +18,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import yazilim.hilal.yesil.yhycamera.R;
+import yazilim.hilal.yesil.yhycamera.data.DataManager;
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterPlayVideoBinding;
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterShowPhotoBinding;
-import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenPhotoBinding;
-import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenVideoBinding;
-import yazilim.hilal.yesil.yhycamera.fragments.TakenFragment;
+import yazilim.hilal.yesil.yhycamera.fragments.camera2.TakenFragment;
 import yazilim.hilal.yesil.yhycamera.listener.HideMediaController;
 import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
-
-import static androidx.viewpager.widget.PagerAdapter.POSITION_NONE;
 
 public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private LayoutInflater mInflater;
     private Context context;
 
-    private int delay = 500;
+    private int delay = 100;
     private Handler handler = new Handler();
 
 
@@ -113,9 +102,11 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
                if(videoFile.exists()) {
 
+                   Glide.with(context)
+                           .load(videoFile)
+                           .into(viewHolderVideo.binding.imgPlaceholder);
 
 
-           
 
                  /*  Glide.with(context)
                            .asBitmap()
@@ -136,7 +127,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                        public boolean dispatchKeyEvent(KeyEvent event) {
                            if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
                                super.hide();
-
+                               viewHolderVideo.binding.videoView.stopPlayback();
                                viewHolderVideo.binding.videoView.setMediaController(null);
                                viewHolderVideo.binding.videoView.setMediaController(this);
                                handler.removeCallbacksAndMessages(null);
@@ -165,6 +156,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
 
 
+                           viewHolderVideo.binding.imgPlaceholder.setVisibility(View.VISIBLE);
                            viewHolderVideo.binding.btnPlay.setVisibility(View.VISIBLE);
 
                            viewHolderVideo.binding.videoView.setMediaController(null);
@@ -186,7 +178,7 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                                handler.postDelayed(
                                        new Runnable() {
                                            public void run() {
-                                               //mediaController.show(0);
+                                               mediaController.show(0);
                                                handler.postDelayed(this, delay);;
                                            }},
                                        delay);
@@ -208,6 +200,10 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                        public void hideContoller() {
 
 
+                           DataManager.logD(Integer.toString(position));
+
+                           viewHolderVideo.binding.videoView.stopPlayback();
+                           viewHolderVideo.binding.imgPlaceholder.setVisibility(View.VISIBLE);
                            viewHolderVideo.binding.btnPlay.setVisibility(View.VISIBLE);
                            viewHolderVideo.binding.videoView.setMediaController(null);
                            viewHolderVideo.binding.videoView.setMediaController(mediaController);
@@ -222,21 +218,30 @@ public class ViewPagerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
                    viewHolderVideo.itemView.setOnClickListener(v->{
 
-                       mediaController.show(0);
-                       viewHolderVideo.binding.btnPlay.setVisibility(View.GONE);
-
-                       mediaController.setAnchorView(viewHolderVideo.binding.videoView);
 
 
+                       if(!viewHolderVideo.binding.videoView.isPlaying()) {
 
-                       Uri uri = Uri.parse(data.getPath());
+
+                           mediaController.show(0);
+                           viewHolderVideo.binding.btnPlay.setVisibility(View.GONE);
+                           viewHolderVideo.binding.imgPlaceholder.setVisibility(View.GONE);
 
 
-                       viewHolderVideo.binding.videoView.setMediaController(mediaController);
-                       viewHolderVideo.binding.videoView.setVideoURI(uri);
-                       viewHolderVideo.binding.videoView.requestFocus();
-                       viewHolderVideo.binding.videoView.start();
+                           mediaController.setAnchorView(viewHolderVideo.binding.videoView);
 
+
+                           Uri uri = Uri.parse(data.getPath());
+
+
+                           viewHolderVideo.binding.videoView.setMediaController(mediaController);
+                           viewHolderVideo.binding.videoView.setVideoURI(uri);
+                           viewHolderVideo.binding.videoView.requestFocus();
+                           viewHolderVideo.binding.videoView.start();
+
+                       }else {
+
+                       }
 
                    });
                }

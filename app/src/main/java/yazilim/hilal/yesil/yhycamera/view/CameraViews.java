@@ -1,9 +1,9 @@
 package yazilim.hilal.yesil.yhycamera.view;
 
 import yazilim.hilal.yesil.yhycamera.R;
-import yazilim.hilal.yesil.yhycamera.fragments.CameraFragment;
+import yazilim.hilal.yesil.yhycamera.fragments.camera2.CameraFragment;
 
-import static yazilim.hilal.yesil.yhycamera.fragments.CameraFragment.CAMERA_BACK;
+import static yazilim.hilal.yesil.yhycamera.fragments.camera2.CameraFragment.CAMERA_BACK;
 
 public class CameraViews {
 

@@ -1,4 +1,4 @@
-package yazilim.hilal.yesil.yhycamera.fragments;
+package yazilim.hilal.yesil.yhycamera.fragments.camera2;
 
 import android.content.Context;
 import android.graphics.drawable.Icon;
@@ -16,6 +16,8 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import yazilim.hilal.yesil.yhycamera.R;
@@ -36,7 +38,7 @@ public class TakenFragment extends Fragment {
 
     private int currentItem;
 
-    private static HideMediaController listenerHideMediaController;
+    private static List<HideMediaController> listenerHideMediaController = new ArrayList<>();
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -81,11 +83,19 @@ public class TakenFragment extends Fragment {
             public void onPageScrollStateChanged(int state) {
                 super.onPageScrollStateChanged(state);
 
-               /* if(listenerHideMediaController != null) {
+                if(listenerHideMediaController != null) {
 
-                    listenerHideMediaController.hideContoller();
+                    if(listenerHideMediaController.size()>0){
 
-                }*/
+
+                        for(HideMediaController item : listenerHideMediaController){
+                            item.hideContoller();
+                        }
+                    }
+
+
+
+                }
 
 
 
@@ -140,7 +150,17 @@ public class TakenFragment extends Fragment {
 
     public static void  mediaControllerOnHide(HideMediaController listener){
 
-        listenerHideMediaController = listener;
+
+        for(HideMediaController item : listenerHideMediaController){
+
+            if(item == listener){
+                return;
+            }
+        }
+
+
+        listenerHideMediaController.add(listener);
+
     }
 
 

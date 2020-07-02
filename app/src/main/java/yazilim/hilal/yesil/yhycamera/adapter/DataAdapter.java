@@ -23,8 +23,7 @@ import yazilim.hilal.yesil.yhycamera.databinding.AdapterHorizantalTakenPhotoBind
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterHorizantalTakenVideoBinding;
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenPhotoBinding;
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenVideoBinding;
-import yazilim.hilal.yesil.yhycamera.fragments.CameraFragment;
-import yazilim.hilal.yesil.yhycamera.fragments.TakenFragment;
+import yazilim.hilal.yesil.yhycamera.fragments.camera2.TakenFragment;
 import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
 
 public class DataAdapter  extends RecyclerView.Adapter<RecyclerView.ViewHolder> {

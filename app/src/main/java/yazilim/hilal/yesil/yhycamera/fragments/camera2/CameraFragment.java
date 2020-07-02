@@ -14,28 +14,21 @@
  * limitations under the License.
  */
 
-package yazilim.hilal.yesil.yhycamera.fragments;
+package yazilim.hilal.yesil.yhycamera.fragments.camera2;
 
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -53,30 +46,23 @@ import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.MeteringRectangle;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.AudioManager;
 import android.media.CamcorderProfile;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.MediaActionSound;
 import android.media.MediaRecorder;
-import android.net.Uri;
-import android.nfc.Tag;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.solver.widgets.Rectangle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.provider.MediaStore;
 import android.util.Log;
@@ -90,8 +76,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.ScaleAnimation;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 
@@ -636,6 +620,8 @@ public class CameraFragment extends Fragment
                 if (isVideo) {
 
                     if (mIsRecordingVideo) {
+                        MediaActionSound sound = new MediaActionSound();
+                        sound.play(MediaActionSound.STOP_VIDEO_RECORDING);
                         binding.videoTimer.setVisibility(View.GONE);
                         binding.btnTake.setImageResource(R.drawable.video_start);
                         stopRecordingVideo();
@@ -655,6 +641,9 @@ public class CameraFragment extends Fragment
 
 
                     } else {
+
+                        MediaActionSound sound = new MediaActionSound();
+                        sound.play(MediaActionSound.START_VIDEO_RECORDING);
                         binding.btnTake.setImageResource(R.drawable.video_stop);
                         binding.videoTimer.setVisibility(View.VISIBLE);
                         videoRoot.mkdirs();
