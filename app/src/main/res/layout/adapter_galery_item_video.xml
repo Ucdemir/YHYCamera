@@ -1,0 +1,27 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/takenVideo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+        </androidx.appcompat.widget.AppCompatImageView>
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/video"
+            android:tint="#ffffff"
+            >
+
+        </androidx.appcompat.widget.AppCompatImageView>
+    </RelativeLayout>
+
+
+</layout>

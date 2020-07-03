@@ -17,4 +17,9 @@
     <style name="MaterialTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowFullscreen">true</item>
     </style>
+
+    <style name="CornerRadiusDialog"  parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_corner_background</item>
+
+    </style>
 </resources>

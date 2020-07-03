@@ -26,6 +26,13 @@
     <string name="camera_error">This device doesn\'t support Camera2 API.</string>
 
 
+    <!-- Galery !-->
+    <string name="loading">Loading...</string>
+    <string name="getting_albums">Getting Albums!</string>
+    <string name="tab_all">ALL</string>
+    <string name="tab_pictures">PICTURES</string>
+    <string name="tab_videos">VIDEOS</string>
+
 
 
 </resources>

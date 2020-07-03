@@ -43,4 +43,6 @@ public class PhoneAlbum {
     public void setAlbumPhotos( Vector< PhonePhoto > albumPhotos ) {
         this.albumPhotos = albumPhotos;
     }
+
+
 }
