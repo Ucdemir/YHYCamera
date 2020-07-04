@@ -1,15 +1,23 @@
 package yazilim.hilal.yesil.yhycamera.adapter.galery;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 
 import java.io.File;
 import java.net.URLConnection;
@@ -24,6 +32,7 @@ import yazilim.hilal.yesil.yhycamera.databinding.AdapterHorizantalTakenVideoBind
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenPhotoBinding;
 import yazilim.hilal.yesil.yhycamera.databinding.AdapterTakenVideoBinding;
 import yazilim.hilal.yesil.yhycamera.models.PhoneAlbum;
+import yazilim.hilal.yesil.yhycamera.models.PhonePhoto;
 import yazilim.hilal.yesil.yhycamera.pojo.DataClass;
 
 public class GaleryItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
@@ -31,7 +40,7 @@ public class GaleryItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     //Class Objects
     private  Context context;
-    private Vector<PhoneAlbum> albums = new Vector<PhoneAlbum>();
+    private Vector<PhonePhoto> albumPhotos = new Vector<PhonePhoto>();
 
 
     //Variables
@@ -49,9 +58,9 @@ public class GaleryItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public int getItemViewType(int position) {
 
-        PhoneAlbum data = albums.get(position);
+        PhonePhoto data = albumPhotos.get(position);
 
-        if(isImageFile(data.getCoverUri()) ){
+        if(isImageFile(data.getPhotoUri()) ){
             return 1;
         }else{
             return 2;
@@ -87,18 +96,33 @@ public class GaleryItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-        PhoneAlbum data = albums.get(position);
+        PhonePhoto data = albumPhotos.get(position);
 
-        File file = new File(data.getCoverUri());
+        File file = new File(data.getPhotoUri());
         switch (holder.getItemViewType()){
             case 1:
           ViewHolderPhoto viewHolder = (ViewHolderPhoto) holder;
+
+                viewHolder.binding.root.setBackgroundColor(Color.parseColor("#ffffff"));
                 if(file.exists()){
 
 
                     Glide.with(context)
                             .load(file)
                             .centerCrop()
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+
+                                    viewHolder.binding.root.setBackgroundColor(Color.parseColor("#484848"));
+                                    return false;
+                                }
+                            })
                             .into(viewHolder.binding.takenPhoto);
                 }
 
@@ -108,11 +132,30 @@ public class GaleryItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
             case 2:
                 ViewHolderVideo viewHolderVideo = (ViewHolderVideo)holder;
+
+                viewHolderVideo.binding.root.setBackgroundColor(Color.parseColor("#ffffff"));
                 if(file.exists()){
                     Glide.with(context)
                             .asBitmap()
                             .centerCrop()
                             .load(file)
+                            .listener(new RequestListener<Bitmap>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+
+
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+
+
+                                    viewHolderVideo.binding.root.setBackgroundColor(Color.parseColor("#484848"));
+
+                                    return false;
+                                }
+                            })
                             .into(viewHolderVideo.binding.takenVideo);
 
                 }
@@ -124,7 +167,7 @@ public class GaleryItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     @Override
     public int getItemCount() {
-        return albums.size();
+        return albumPhotos.size();
     }
 
     public class ViewHolderPhoto extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -173,9 +216,9 @@ public class GaleryItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
 
-    public void setDataList(Vector<PhoneAlbum> albums){
+    public void setDataList(Vector<PhonePhoto> photoAlbums){
 
-        this.albums = albums;
+        this.albumPhotos = photoAlbums;
         this.notifyDataSetChanged();
 
 

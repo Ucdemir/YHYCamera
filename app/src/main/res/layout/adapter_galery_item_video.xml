@@ -4,21 +4,24 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center">
+        android:gravity="center"
+        android:background="#ffffff"
+        android:id="@+id/root"
+        >
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/takenVideo"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            >
+           android:layout_margin="1dp" >
 
         </androidx.appcompat.widget.AppCompatImageView>
 
         <androidx.appcompat.widget.AppCompatImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
             app:srcCompat="@drawable/video"
             android:tint="#ffffff"
-            >
+            android:layout_centerInParent="true">
 
         </androidx.appcompat.widget.AppCompatImageView>
     </RelativeLayout>

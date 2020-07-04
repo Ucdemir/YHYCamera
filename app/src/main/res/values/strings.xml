@@ -34,5 +34,7 @@
     <string name="tab_videos">VIDEOS</string>
 
 
+    <!-- All Galery Fragment !-->
+    <string name="albumAll">All Albums</string>
 
 </resources>

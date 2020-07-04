@@ -34,12 +34,16 @@ public class AllGaleryFragment  extends Fragment {
 
     //Class Objects
     private GridLayoutManager glm;//Adapter
-    private GaleryItemAdapter adapter;
+    public GaleryItemAdapter adapter;
 
-    //Vector<PhoneAlbum> allData;
+    Vector<PhoneAlbum> allData;
 
     private Context context;
 
+
+    public AllGaleryFragment(){
+
+    }
 
 
     @Override
@@ -72,11 +76,11 @@ public class AllGaleryFragment  extends Fragment {
 
 
 
-        getDataOrderByDate(new OnPhoneImagesObtained() {
+        getMixedDataOrderByDate(new OnPhoneImagesObtained() {
             @Override
-            public void onComplete(Vector<PhoneAlbum> albums) {
-                adapter.setDataList(albums);
-            }
+            public void onComplete(Vector<PhonePhoto> listAllData) {
+                adapter.setDataList(listAllData);
+        }
 
             @Override
             public void onError() {
@@ -84,14 +88,17 @@ public class AllGaleryFragment  extends Fragment {
             }
         });
 
+
+       // binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
+
         return binding.getRoot();
     }
 
 
-    private void getDataOrderByDate(OnPhoneImagesObtained listener){
+    private void getMixedDataOrderByDate(OnPhoneImagesObtained listener){
 
 
-        Vector<PhoneAlbum> allData = new Vector<PhoneAlbum>();
+        Vector<PhonePhoto> listAllData = new Vector<PhonePhoto>();
 
         String[] projection = new String[] {
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME,
@@ -119,10 +126,8 @@ public class AllGaleryFragment  extends Fragment {
 
 
             if (cur.moveToFirst()) {
-                String bucketName;
-                String data;
-                String imageId;
-                int bucketNameColumn = cur.getColumnIndex(
+
+                int columndDataName = cur.getColumnIndex(
                         MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
 
                 int imageUriColumn = cur.getColumnIndex(
@@ -132,27 +137,17 @@ public class AllGaleryFragment  extends Fragment {
                         MediaStore.Images.Media._ID );
 
                 do {
-                    // Get the field values
-                    bucketName = cur.getString( bucketNameColumn );
-                    data = cur.getString( imageUriColumn );
-                    imageId = cur.getString( imageIdColumn );
 
-                    // Adding a new PhonePhoto object to phonePhotos vector
+
+
                     PhonePhoto phonePhoto = new PhonePhoto();
-                    phonePhoto.setAlbumName( bucketName );
-                    phonePhoto.setPhotoUri( data );
-                    phonePhoto.setId( Integer.valueOf( imageId ) );
+
+                    phonePhoto.setId( Integer.valueOf( cur.getString( imageIdColumn)));
+                    phonePhoto.setPhotoName( cur.getString( columndDataName ) );
+                    phonePhoto.setPhotoUri( cur.getString(imageUriColumn));
 
 
-                    PhoneAlbum album = new PhoneAlbum();
-
-                    album.setId( phonePhoto.getId() );
-                    album.setName( bucketName );
-                    album.setCoverUri( phonePhoto.getPhotoUri());
-                    album.getAlbumPhotos().add( phonePhoto );
-
-
-                    allData.add(album);
+                    listAllData.add(phonePhoto);
 
 
 
@@ -161,7 +156,7 @@ public class AllGaleryFragment  extends Fragment {
 
             cur.close();
 
-            listener.onComplete(allData);
+            listener.onComplete(listAllData);
         } else {
 
         }

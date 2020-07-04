@@ -13,7 +13,9 @@
     <com.google.android.material.tabs.TabLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/albumTabLayout">
+        android:id="@+id/albumTabLayout"
+        app:tabIndicatorColor="#000000"
+        >
 
     </com.google.android.material.tabs.TabLayout>
 <androidx.viewpager2.widget.ViewPager2
@@ -41,7 +43,7 @@
             android:layout_centerHorizontal="true"
             android:id="@+id/txtCurrentAlbum"
             android:gravity="center"
-            android:textSize="26sp"
+            android:textSize="16sp"
             android:textColor="#000000"
             ></TextView>
 

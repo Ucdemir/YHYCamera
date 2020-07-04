@@ -34,4 +34,8 @@
     <string name="tab_all">HEPSİ</string>
     <string name="tab_pictures">RESİMLER</string>
     <string name="tab_videos">İZLENTİ</string>
+
+
+    <!-- All Galery Fragment !-->
+    <string name="albumAll">Bütün Albümler</string>
 </resources>
