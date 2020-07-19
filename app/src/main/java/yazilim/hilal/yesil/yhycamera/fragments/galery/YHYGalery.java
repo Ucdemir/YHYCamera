@@ -28,6 +28,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import yazilim.hilal.yesil.yhycamera.R;
@@ -70,7 +71,7 @@ public class YHYGalery  extends Fragment{
 
     //Class Variables
     private  String currentAlbumName;
-
+    private int currentTabIndex = 0;
 
 
     @Override
@@ -147,7 +148,38 @@ public class YHYGalery  extends Fragment{
 
 
         binding.selectAlbum.setOnClickListener(v->{
-            dialogSelectAlbums(context, convertAllbumToArray(allAllbumNames));
+
+
+
+
+
+            switch (currentTabIndex){
+                case 0:
+
+                    dialogSelectAlbums(context, convertAllbumToArray(allAllbumNames));
+                    break;
+
+
+                case 1:
+
+                    AlbumsWithTypes temp = new AlbumsWithTypes();
+                    temp = allAllbumNames;
+                    temp.videoAlbums = new ArrayList<>();
+
+                    dialogSelectAlbums(context, convertAllbumToArray(temp));
+                    break;
+
+
+                case 2:
+
+                    temp = allAllbumNames;
+                    temp.photoAlbums = new ArrayList<>();
+
+                    dialogSelectAlbums(context, convertAllbumToArray(temp));
+
+                    break;
+
+            }
         });
 
 
@@ -164,6 +196,7 @@ public class YHYGalery  extends Fragment{
 
 
                 binding.albumTabLayout.setScrollPosition(position,0f,true);
+                binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
 
             }
         });
@@ -309,7 +342,7 @@ public class YHYGalery  extends Fragment{
 
                 currentAlbumName = arr[n].toString();
 
-                switch (binding.albumTabLayout.getSelectedTabPosition()){
+                switch (currentTabIndex){
 
                     case 0:
 
@@ -331,6 +364,11 @@ public class YHYGalery  extends Fragment{
 
 
                     case 1:
+
+
+                        if(n != 0){
+                            pictureGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(arr[n].toString())).getAlbumPhotos());
+                        }
 
                         break;
 
@@ -392,12 +430,22 @@ public class YHYGalery  extends Fragment{
         }
 
         @Override
+        public long getItemId(int position) {
+            currentTabIndex = position;
+
+            return super.getItemId(position);
+        }
+
+        @Override
         public Fragment createFragment(int position) {
 
             switch (position) {
                 case 0:
+
+
                     return allGaleryFragment;
                 case 1:
+
                     return pictureGaleryFragment;
                 case 2:
 
