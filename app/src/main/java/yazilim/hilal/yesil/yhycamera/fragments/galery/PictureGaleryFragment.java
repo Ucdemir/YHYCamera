@@ -34,6 +34,8 @@ public class PictureGaleryFragment extends Fragment {
 
 
     //Class Objects
+    public Vector<PhonePhoto> listOfPictureData;
+
     public GaleryItemAdapter adapter;
     private Context context;
 
@@ -71,7 +73,8 @@ public class PictureGaleryFragment extends Fragment {
         getPicturesByOrderByDate(new OnPhoneImagesObtained() {
             @Override
             public void onComplete(Vector<PhonePhoto> listAllData) {
-                adapter.setDataList(listAllData);
+                listOfPictureData = listAllData;
+                adapter.setDataList(listOfPictureData);
             }
 
             @Override

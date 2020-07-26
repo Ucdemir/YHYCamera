@@ -29,6 +29,7 @@ import com.kaopiz.kprogresshud.KProgressHUD;
 
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import yazilim.hilal.yesil.yhycamera.R;
@@ -58,6 +59,9 @@ public class YHYGalery  extends Fragment{
     private PictureGaleryFragment pictureGaleryFragment = new PictureGaleryFragment();
     private VideosGaleryFragment videosGaleryFragment = new VideosGaleryFragment();
 
+    private CharSequence[] allAlbums;
+    private CharSequence[] pictureAlbums;
+    private CharSequence[]  videoAlbums;
 
     private Context context;
     private KProgressHUD hud;
@@ -119,7 +123,7 @@ public class YHYGalery  extends Fragment{
 
                      YHYGalery.this.albumsWithData = albumsWithData;
                      YHYGalery.this.allAllbumNames = allAllbumNames;
-
+                     setAlbumsArr();
 
 
                  }
@@ -156,26 +160,21 @@ public class YHYGalery  extends Fragment{
             switch (currentTabIndex){
                 case 0:
 
-                    dialogSelectAlbums(context, convertAllbumToArray(allAllbumNames));
+                    dialogSelectAlbums(context,allAlbums );
                     break;
 
 
                 case 1:
 
-                    AlbumsWithTypes temp = new AlbumsWithTypes();
-                    temp = allAllbumNames;
-                    temp.videoAlbums = new ArrayList<>();
+                    dialogSelectAlbums(context, pictureAlbums);
 
-                    dialogSelectAlbums(context, convertAllbumToArray(temp));
+
                     break;
 
 
                 case 2:
 
-                    temp = allAllbumNames;
-                    temp.photoAlbums = new ArrayList<>();
-
-                    dialogSelectAlbums(context, convertAllbumToArray(temp));
+                    dialogSelectAlbums(context, videoAlbums);
 
                     break;
 
@@ -189,16 +188,73 @@ public class YHYGalery  extends Fragment{
         binding.txtCurrentAlbum.setText(currentAlbumName);
 
         binding.albumViewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
 
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
 
 
                 binding.albumTabLayout.setScrollPosition(position,0f,true);
-                binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
+
+
+
+                switch (position){
+                    case 0 :
+                        int currentAlbumIndex = findAlbumPosition(allAlbums,currentAlbumName);
+
+                        if(currentAlbumIndex == 0){
+                            allGaleryFragment.adapter.setDataList(allGaleryFragment.listOfAllGaleryData);
+                            binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
+                        }else {
+                            //allGaleryFragment.adapter.setDataList(albumsWithData.get(currentAlbum).getAlbumPhotos());
+
+
+                            binding.txtCurrentAlbum.setText(currentAlbumName);
+                        }
+
+                        break;
+
+
+
+                    case 1:
+
+                        currentAlbumIndex = findAlbumPosition(pictureAlbums,currentAlbumName);
+
+                        if(currentAlbumIndex == 0){
+
+                            pictureGaleryFragment.adapter.setDataList(pictureGaleryFragment.listOfPictureData);
+                            binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
+
+                        }else {
+                           // pictureGaleryFragment.adapter.setDataList(albumsWithData.get(currentPictureAlbum).getAlbumPhotos());
+                            binding.txtCurrentAlbum.setText(currentAlbumName);
+                        }
+                        break;
+
+
+
+                    case 2:
+
+                        currentAlbumIndex = findAlbumPosition(videoAlbums,currentAlbumName);
+
+                        if(currentAlbumIndex == 0){
+
+                            videosGaleryFragment.adapter.setDataList(videosGaleryFragment.listOfVideoGaleryData);
+                            binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
+
+                        }else {
+                           // videosGaleryFragment.adapter.setDataList(albumsWithData.get(currentVideoAlbum).getAlbumPhotos());
+                            binding.txtCurrentAlbum.setText(currentAlbumName);
+
+                        }
+
+                        break;
+                }
+
 
             }
+
+
         });
 
 
@@ -348,11 +404,11 @@ public class YHYGalery  extends Fragment{
 
 
                         if (n == 0) {
-
-
+                            allGaleryFragment.adapter.setDataList(allGaleryFragment.listOfAllGaleryData);
+                            binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
 
                         }else{
-                            allGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(arr[n].toString())).getAlbumPhotos());
+                            allGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(allAlbums,currentAlbumName)).getAlbumPhotos());
                             binding.txtCurrentAlbum.setText(arr[n]);
                         }
 
@@ -367,13 +423,26 @@ public class YHYGalery  extends Fragment{
 
 
                         if(n != 0){
-                            pictureGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(arr[n].toString())).getAlbumPhotos());
+                            pictureGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(pictureAlbums,currentAlbumName)).getAlbumPhotos());
+                            binding.txtCurrentAlbum.setText(arr[n]);
+                        }else{
+                            pictureGaleryFragment.adapter.setDataList(pictureGaleryFragment.listOfPictureData);
+                            binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
                         }
 
                         break;
 
 
                     case 2:
+
+                        if(n != 0){
+                            videosGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(videoAlbums,currentAlbumName)).getAlbumPhotos());
+                            binding.txtCurrentAlbum.setText(arr[n]);
+                        }else{
+                            videosGaleryFragment.adapter.setDataList(videosGaleryFragment.listOfVideoGaleryData);
+                            binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
+                        }
+
 
                         break;
                 }
@@ -471,12 +540,12 @@ public class YHYGalery  extends Fragment{
         return mimeType != null && mimeType.startsWith("image");
     }
 
-    private int findAlbumPosition(String name){
+    private int findAlbumPosition( CharSequence[] arr,String name){
 
 
-        for(int k=0 ; k<albumsWithData.size();k++){
-            PhoneAlbum phoneAlbum = albumsWithData.get(k);
-            if(phoneAlbum.getName().equals(name)){
+        for(int k=0 ; k<arr.length;k++){
+            CharSequence currentName = arr[k];
+            if(currentName.equals(name)){
 
                 return k;
             }
@@ -487,6 +556,30 @@ public class YHYGalery  extends Fragment{
         return 0;
     }
 
+    private int findPictureAlbumPosition(String name){
+
+        for(int k=0; k < allAllbumNames.photoAlbums.size(); k++){
+            PhoneAlbum phoneAlbum = albumsWithData.get(k);
+            if(phoneAlbum.getName().equals(name)){
+
+                return k;
+            }
+
+        }
+        return 0;
+    }
+    private int findVideoAlbumPosition(String name){
+
+        for(int k=0; k < allAllbumNames.videoAlbums.size(); k++){
+            PhoneAlbum phoneAlbum = albumsWithData.get(k);
+            if(phoneAlbum.getName().equals(name)){
+
+                return k;
+            }
+
+        }
+        return 0;
+    }
 
     private int findDialogCurrentIndex(CharSequence[] arr){
 
@@ -501,6 +594,29 @@ public class YHYGalery  extends Fragment{
         }
 
         return 0;
+    }
+
+
+    private void setAlbumsArr(){
+
+
+        allAlbums = convertAllbumToArray(allAllbumNames);
+
+
+        try {
+            AlbumsWithTypes temp = (AlbumsWithTypes) allAllbumNames.clone();
+            temp.videoAlbums = new ArrayList<>();
+            pictureAlbums = convertAllbumToArray(temp);
+            temp = (AlbumsWithTypes) allAllbumNames.clone();
+            temp.photoAlbums = new ArrayList<>();
+            videoAlbums =  convertAllbumToArray(temp);
+
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 }
 

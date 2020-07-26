@@ -30,8 +30,9 @@ public class VideosGaleryFragment extends Fragment {
     //View Objects
     private FragmentGaleryVideoBinding binding;
 
-
     //Class Objects
+    public Vector<PhonePhoto> listOfVideoGaleryData;
+
     public GaleryItemAdapter adapter;
     private Context context;
 
@@ -69,7 +70,8 @@ public class VideosGaleryFragment extends Fragment {
         getVideoByOrderByDate(new OnPhoneImagesObtained() {
             @Override
             public void onComplete(Vector<PhonePhoto> listAllData) {
-                adapter.setDataList(listAllData);
+                listOfVideoGaleryData = listAllData;
+                adapter.setDataList(listOfVideoGaleryData);
             }
 
             @Override

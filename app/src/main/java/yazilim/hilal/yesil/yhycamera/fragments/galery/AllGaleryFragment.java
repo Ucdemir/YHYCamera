@@ -36,10 +36,9 @@ public class AllGaleryFragment  extends Fragment {
     private GridLayoutManager glm;//Adapter
     public GaleryItemAdapter adapter;
 
-    Vector<PhoneAlbum> allData;
-
     private Context context;
 
+    public Vector<PhonePhoto> listOfAllGaleryData;
 
     public AllGaleryFragment(){
 
@@ -79,7 +78,8 @@ public class AllGaleryFragment  extends Fragment {
         getMixedDataOrderByDate(new OnPhoneImagesObtained() {
             @Override
             public void onComplete(Vector<PhonePhoto> listAllData) {
-                adapter.setDataList(listAllData);
+                listOfAllGaleryData = listAllData;
+                adapter.setDataList(listOfAllGaleryData);
         }
 
             @Override
