@@ -193,6 +193,7 @@ public class YHYGalery  extends Fragment{
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
 
+                currentTabIndex = position;
 
                 binding.albumTabLayout.setScrollPosition(position,0f,true);
 
@@ -200,13 +201,14 @@ public class YHYGalery  extends Fragment{
 
                 switch (position){
                     case 0 :
-                        int currentAlbumIndex = findAlbumPosition(allAlbums,currentAlbumName);
+                        int currentAlbumIndex = findAllAlbumPositionInsideDialog(currentAlbumName);
+
 
                         if(currentAlbumIndex == 0){
                             allGaleryFragment.adapter.setDataList(allGaleryFragment.listOfAllGaleryData);
                             binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
                         }else {
-                            //allGaleryFragment.adapter.setDataList(albumsWithData.get(currentAlbum).getAlbumPhotos());
+                            allGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPositionForAllAlbum(currentAlbumName)).getAlbumAll());
 
 
                             binding.txtCurrentAlbum.setText(currentAlbumName);
@@ -217,8 +219,10 @@ public class YHYGalery  extends Fragment{
 
 
                     case 1:
+                        currentAlbumIndex = findPictureAlbumPositionInsideDialog(currentAlbumName);
 
-                        currentAlbumIndex = findAlbumPosition(pictureAlbums,currentAlbumName);
+
+
 
                         if(currentAlbumIndex == 0){
 
@@ -226,7 +230,7 @@ public class YHYGalery  extends Fragment{
                             binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
 
                         }else {
-                           // pictureGaleryFragment.adapter.setDataList(albumsWithData.get(currentPictureAlbum).getAlbumPhotos());
+                            pictureGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPositionForAllAlbum(currentAlbumName)).getAlbumPhotos());
                             binding.txtCurrentAlbum.setText(currentAlbumName);
                         }
                         break;
@@ -235,7 +239,7 @@ public class YHYGalery  extends Fragment{
 
                     case 2:
 
-                        currentAlbumIndex = findAlbumPosition(videoAlbums,currentAlbumName);
+                        currentAlbumIndex = findVideoAlbumPositionInsideDialog(currentAlbumName);
 
                         if(currentAlbumIndex == 0){
 
@@ -243,7 +247,7 @@ public class YHYGalery  extends Fragment{
                             binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
 
                         }else {
-                           // videosGaleryFragment.adapter.setDataList(albumsWithData.get(currentVideoAlbum).getAlbumPhotos());
+                            videosGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPositionForAllAlbum(currentAlbumName)).getAlbumVideos());
                             binding.txtCurrentAlbum.setText(currentAlbumName);
 
                         }
@@ -265,7 +269,7 @@ public class YHYGalery  extends Fragment{
 
     public static void getAllAlbumsWithTheirData( Context context , OnPhoneImagesObtained listener ){
         // Creating vectors to hold the final albums objects and albums names
-        Vector<PhoneAlbum> albumsWithPictures = new Vector<>();
+        Vector<PhoneAlbum> albumsWithData = new Vector<>();
         AlbumsWithTypes  listOfAlbums = new  AlbumsWithTypes();
 
         // which image properties are we querying
@@ -313,7 +317,7 @@ public class YHYGalery  extends Fragment{
                 int imageIdColumn = cur.getColumnIndex(
                         MediaStore.Images.Media._ID );
 
-                do {
+               a: do {
                     // Get the field values
                     bucketName = cur.getString( bucketNameColumn );
                     data = cur.getString( imageUriColumn );
@@ -325,55 +329,64 @@ public class YHYGalery  extends Fragment{
                     phonePhoto.setPhotoUri( data );
                     phonePhoto.setId( Integer.valueOf( imageId ) );
 
-                    if ( listOfAlbums.photoAlbums.contains( bucketName ) ) {
-                        for ( PhoneAlbum album : albumsWithPictures ) {
-                            if ( album.getName().equals( bucketName ) ) {
-                                album.getAlbumPhotos().add( phonePhoto );
-                                Log.i( "DeviceImageManager", "A photo was added to album => " + bucketName );
-                                break;
-                            }
-                        }
-                    }else if(listOfAlbums.videoAlbums.contains( bucketName )){
-                        for ( PhoneAlbum album : albumsWithPictures ) {
-                            if ( album.getName().equals( bucketName ) ) {
-                                album.getAlbumPhotos().add( phonePhoto );
-                                Log.i( "DeviceImageManager", "A photo was added to album => " + bucketName );
-                                break;
-                            }
-                        }
 
-                    } else {
-                        PhoneAlbum album = new PhoneAlbum();
-                        Log.i( "DeviceImageManager", "A new album was created => " + bucketName );
-                        album.setId( phonePhoto.getId() );
-                        album.setName( bucketName );
-                        album.setCoverUri( phonePhoto.getPhotoUri() );
-                        album.getAlbumPhotos().add( phonePhoto );
-                        Log.i( "DeviceImageManager", "A photo was added to album => " + bucketName );
-
-                        albumsWithPictures.add( album );
-                        //AllAlbumsWithNames.add( bucketName );
+                   PhoneAlbum album = new PhoneAlbum();
+                   Log.i( "DeviceImageManager", "A new album was created => " + bucketName );
+                   album.setId( phonePhoto.getId() );
+                   album.setName( bucketName );
+                   album.setCoverUri( phonePhoto.getPhotoUri() );
 
 
-                        if(isImageFile(data)){
-                            listOfAlbums.photoAlbums.add(bucketName);
+                   Log.i( "DeviceImageManager", "A photo was added to album => " + bucketName );
+
+                   boolean isAlbumNameFound = false;
+
+                   if(isImageFile(data)) {
+
+                       for(String iterateAlbumName : listOfAlbums.photoAlbums){
+                           if(iterateAlbumName.equals(bucketName)){
+                              isAlbumNameFound = true;
+                           }
+
+                       }
+
+                       if(!isAlbumNameFound){
+                           listOfAlbums.photoAlbums.add(bucketName);
+                       }
+
+                       album.getAlbumPhotos().add( phonePhoto );
+
+                   }
+                   isAlbumNameFound = false;
+                   if(!isImageFile(data)) {
+
+                       for(String iterateAlbumName : listOfAlbums.videoAlbums){
+                           if(iterateAlbumName.equals(bucketName)){
+                            isAlbumNameFound = true;
+                           }
+
+                       }
 
 
-                        }else{
-                            listOfAlbums.videoAlbums.add(bucketName);
-                        }
+                       if(!isAlbumNameFound){
+                           listOfAlbums.videoAlbums.add(bucketName);
+                       }
+
+                       album.getAlbumVideos().add( phonePhoto );
+
+                   }
+
+                   album.getAlbumAll().add(phonePhoto);
+                   albumsWithData.add( album );
 
 
 
-
-                       // logD("AlbumName:"+ bucketName+" , isVideo"+Boolean.toString(isImageFile(data)));
-                    }
 
                 } while (cur.moveToNext());
             }
 
             cur.close();
-            listener.onComplete( albumsWithPictures,listOfAlbums );
+            listener.onComplete( albumsWithData,listOfAlbums );
         } else {
             listener.onError();
         }
@@ -408,7 +421,7 @@ public class YHYGalery  extends Fragment{
                             binding.txtCurrentAlbum.setText(getString(R.string.albumAll));
 
                         }else{
-                            allGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(allAlbums,currentAlbumName)).getAlbumPhotos());
+                            allGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPositionForAllAlbum(currentAlbumName)).getAlbumAll());
                             binding.txtCurrentAlbum.setText(arr[n]);
                         }
 
@@ -423,7 +436,7 @@ public class YHYGalery  extends Fragment{
 
 
                         if(n != 0){
-                            pictureGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(pictureAlbums,currentAlbumName)).getAlbumPhotos());
+                            pictureGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPositionForAllAlbum(currentAlbumName)).getAlbumPhotos());
                             binding.txtCurrentAlbum.setText(arr[n]);
                         }else{
                             pictureGaleryFragment.adapter.setDataList(pictureGaleryFragment.listOfPictureData);
@@ -436,7 +449,7 @@ public class YHYGalery  extends Fragment{
                     case 2:
 
                         if(n != 0){
-                            videosGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPosition(videoAlbums,currentAlbumName)).getAlbumPhotos());
+                            videosGaleryFragment.adapter.setDataList(albumsWithData.get(findAlbumPositionForAllAlbum(currentAlbumName)).getAlbumVideos());
                             binding.txtCurrentAlbum.setText(arr[n]);
                         }else{
                             videosGaleryFragment.adapter.setDataList(videosGaleryFragment.listOfVideoGaleryData);
@@ -498,9 +511,13 @@ public class YHYGalery  extends Fragment{
             super(fa);
         }
 
+
+
+
+
         @Override
         public long getItemId(int position) {
-            currentTabIndex = position;
+
 
             return super.getItemId(position);
         }
@@ -556,11 +573,29 @@ public class YHYGalery  extends Fragment{
         return 0;
     }
 
-    private int findPictureAlbumPosition(String name){
+    private int findAlbumPositionForAllAlbum(String name){
 
-        for(int k=0; k < allAllbumNames.photoAlbums.size(); k++){
+        for(int k=0; k<albumsWithData.size(); k++){
+
             PhoneAlbum phoneAlbum = albumsWithData.get(k);
+
             if(phoneAlbum.getName().equals(name)){
+
+
+                return k;
+            }
+        }
+
+
+        return 0;
+
+    }
+
+    private int findAllAlbumPositionInsideDialog(String name){
+
+        for(int k=0; k < allAlbums.length; k++){
+            CharSequence albumName = allAlbums[k];
+            if(albumName.equals(name)){
 
                 return k;
             }
@@ -568,11 +603,24 @@ public class YHYGalery  extends Fragment{
         }
         return 0;
     }
-    private int findVideoAlbumPosition(String name){
 
-        for(int k=0; k < allAllbumNames.videoAlbums.size(); k++){
-            PhoneAlbum phoneAlbum = albumsWithData.get(k);
-            if(phoneAlbum.getName().equals(name)){
+    private int findPictureAlbumPositionInsideDialog(String name){
+
+        for(int k=0; k < pictureAlbums.length; k++){
+            CharSequence albumName = pictureAlbums[k];
+            if(albumName.equals(name)){
+
+                return k;
+            }
+
+        }
+        return 0;
+    }
+    private int findVideoAlbumPositionInsideDialog(String name){
+
+        for(int k=0; k < videoAlbums.length; k++){
+            CharSequence albumName = videoAlbums[k];
+            if(albumName.equals(name)){
 
                 return k;
             }
@@ -606,6 +654,7 @@ public class YHYGalery  extends Fragment{
         try {
             AlbumsWithTypes temp = (AlbumsWithTypes) allAllbumNames.clone();
             temp.videoAlbums = new ArrayList<>();
+
             pictureAlbums = convertAllbumToArray(temp);
             temp = (AlbumsWithTypes) allAllbumNames.clone();
             temp.photoAlbums = new ArrayList<>();

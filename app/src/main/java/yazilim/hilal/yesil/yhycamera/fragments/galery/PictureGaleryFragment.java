@@ -22,6 +22,7 @@ import yazilim.hilal.yesil.yhycamera.R;
 import yazilim.hilal.yesil.yhycamera.adapter.galery.GaleryItemAdapter;
 import yazilim.hilal.yesil.yhycamera.databinding.FragmentGaleryPictureBinding;
 import yazilim.hilal.yesil.yhycamera.listener.OnPhoneImagesObtained;
+import yazilim.hilal.yesil.yhycamera.models.PhoneAlbum;
 import yazilim.hilal.yesil.yhycamera.models.PhonePhoto;
 
 public class PictureGaleryFragment extends Fragment {
@@ -156,6 +157,22 @@ public class PictureGaleryFragment extends Fragment {
 
     }
 
+  /*  private int findAlbumPositionForPictureAlbum(String name){
 
+        for(int k=0; k<listOfPictureData.size(); k++){
+
+            PhonePhoto pictureAlbum = listOfPictureData.get(k);
+
+           /* if(pictureAlbum.getPhotoName().getName().equals(name)){
+
+
+                return k;
+            }
+        }
+
+
+        return 0;
+
+    }*/
 
 }

@@ -7,7 +7,11 @@ public class PhoneAlbum {
     private int id;
     private String name;
     private String coverUri;
-    private Vector<PhonePhoto> albumPhotos;
+    private Vector<PhonePhoto> albumPhotos = new Vector<PhonePhoto>();
+    private Vector<PhonePhoto> albumVideos = new Vector<PhonePhoto>();
+    private Vector<PhonePhoto> albumAll = new Vector<PhonePhoto>();
+
+
 
     public int getId() {
         return id;
@@ -44,5 +48,19 @@ public class PhoneAlbum {
         this.albumPhotos = albumPhotos;
     }
 
+    public Vector<PhonePhoto> getAlbumVideos() {
+        return albumVideos;
+    }
 
+    public void setAlbumVideos(Vector<PhonePhoto> albumVideos) {
+        this.albumVideos = albumVideos;
+    }
+
+    public Vector<PhonePhoto> getAlbumAll() {
+        return albumAll;
+    }
+
+    public void setAlbumAll(Vector<PhonePhoto> albumAll) {
+        this.albumAll = albumAll;
+    }
 }
