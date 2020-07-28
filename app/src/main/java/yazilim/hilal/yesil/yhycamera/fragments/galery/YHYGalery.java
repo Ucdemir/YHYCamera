@@ -482,28 +482,77 @@ public class YHYGalery  extends Fragment{
 
 
 
-    public CharSequence[] convertAllbumToArray(AlbumsWithTypes allAllbumName){
+    public CharSequence[] convertAllbumToArray(AlbumsWithTypes allAllbumName) {
 
-        CharSequence[] arr = new CharSequence[allAllbumName.videoAlbums.size()+allAllbumName.photoAlbums.size()+1];
+         List<String> allAlbumNames = new ArrayList<>();
+        //CharSequence[] arr = new CharSequence[allAllbumName.videoAlbums.size() + allAllbumName.photoAlbums.size() + 1];
+
+        allAlbumNames.add(getString(R.string.albumAll));
+
+            a:for(String current : allAllbumName.videoAlbums){
+
+                for(String iterate : allAlbumNames){
+
+                    if(iterate.equals(current)){
+                        continue a;
+                    }
+                }
+
+                allAlbumNames.add(current);
+            }
 
 
-        arr[0] = getString(R.string.albumAll);
+
+            a:for(String current : allAllbumName.photoAlbums){
+
+                for(String iterate : allAlbumNames){
+
+                    if(iterate.equals(current)){
+                        continue a;
+                    }
+                }
+
+                allAlbumNames.add(current);
+            }
+
+
+
+
+
+
+
+
+       /* arr[0] = getString(R.string.albumAll);
 
        int k = 0;
         for( ; k<allAllbumName.videoAlbums.size(); k++){
             arr[k+1] = allAllbumName.videoAlbums.get(k);
-        }
+        }*/
 
 
-        for(int z =0 ; z<allAllbumName.photoAlbums.size(); z++){
+      /*  a:for(int z =0 ; z<allAllbumName.photoAlbums.size(); z++){
+            CharSequence current = allAllbumName.photoAlbums.get(z);
+            for(int t=0; t< allAllbumName.videoAlbums.size();t++){
+                CharSequence ch = arr[t];
+
+                if(ch.equals(current)){
+                    continue a;
+                }
+
+            }
+            arr[k+1] = current;
+            k++;
+        }*/
+
+       /* for(int z =0 ; z<allAllbumName.photoAlbums.size(); z++){
             arr[k+1] = allAllbumName.photoAlbums.get(z);
             k++;
-        }
+        }*/
+
+        return allAlbumNames.toArray(new CharSequence[allAlbumNames.size()]);
 
 
-
-
-        return arr;
+        //return arr;
     }
 
     private class AlbumPagerAdapter extends FragmentStateAdapter {
@@ -649,6 +698,9 @@ public class YHYGalery  extends Fragment{
 
 
         allAlbums = convertAllbumToArray(allAllbumNames);
+
+
+
 
 
         try {
